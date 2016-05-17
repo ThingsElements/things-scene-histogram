@@ -1,0 +1,42 @@
+{
+  "name": "things-scene-histogram",
+  "version": "1.0.0",
+  "description": "An element providing a starting point for your own reusable Polymer elements.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "serve": "watchify src/*.js -o things-scene-histogram.js src/index.js & polyserve",
+    "build": "browserify src/index.js -o things-scene-histogram.js && uglifyjs things-scene-histogram.js -o things-scene-histogram-min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThingsElements/things-scene-histogram.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ThingsElements/things-scene-histogram/issues"
+  },
+  "homepage": "https://github.com/ThingsElements/things-scene-histogram#readme",
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
+  },
+  "devDependencies": {
+    "babel-cli": "^6.3.17",
+    "babel-core": "^6.3.26",
+    "babel-preset-es2015": "^6.3.13",
+    "babelify": "~7.2.0",
+    "browserify": "~10.2.4",
+    "chai": "^3.4.1",
+    "mocha": "^2.3.4",
+    "should": "^8.0.2",
+    "uglifyjs": "^2.4.10",
+    "watchify": "^3.3.1"
+  },
+  "dependencies": {
+  }
+}

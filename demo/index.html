@@ -1,0 +1,96 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>things-scene-histogram Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+
+    <link rel="import" href="../../things-scene-viewer/things-scene-viewer.html">
+    <link rel="import" href="../../things-scene-viewer/things-scene-layer.html">
+    <link rel="import" href="../../things-scene-viewer/things-scene-handler.html">
+
+    <link rel="import" href="../../things-designer-elements/things-editor-color.html">
+    <link rel="import" href="../../things-designer-elements/things-editor-color-stops.html">
+    <link rel="import" href="../../things-scene-modeler/things-scene-properties.html">
+
+    <link rel="import" href="./things-scene-histogram.html">
+
+    <style is="custom-style">
+
+    @font-face {
+      font-family: "Bitstream Vera Serif Bold";
+      src: url("fonts/VeraSeBd.ttf");
+    }
+
+    things-scene-viewer {
+      display: block;
+      width: 640px;
+      height: 480px;
+    }
+    </style>
+  </head>
+  <body unresolved>
+
+    <template is="dom-bind" id="app">
+      <p>An example of <code>&lt;things-scene-histogram&gt;</code>:</p>
+
+      <things-scene-viewer id='scene'
+                           scene='{{scene}}'
+                           selected='{{selected}}'
+                           model='[[model]]'
+                           mode="1">
+        <things-scene-layer type="selection-layer"></things-scene-layer>
+        <things-scene-layer type="modeling-layer"></things-scene-layer>
+        <things-scene-handler type="text-editor"></things-scene-handler>
+        <things-scene-handler type="move-handler"></things-scene-handler>
+      </things-scene-viewer>
+
+      <things-scene-properties scene="[[scene]]"
+                               selected="[[selected]]"
+                               model="{{target}}"
+                               bounds="{{bounds}}">
+        <fieldset>
+          <legend>marker style</legend>
+          <label>value</label>
+          <input type="number" value-as-number="{{target.value::change}}" min="0" max="100" step="1"/>
+        </fieldset>
+      </things-scene-properties>
+
+    </template>
+
+    <script>
+      window.addEventListener('WebComponentsReady', function(e) {
+        var app = document.querySelector('#app')
+
+        app.model = {
+          fillStyle: '#0EB22A',
+          width: 1500,
+          height: 1000,
+          components: [{
+            type: 'histogam',
+            cx: 600,
+            cy: 400,
+            rx: 300,
+            ry: 300,
+            value: 0,
+            fontSize: 80,
+            fillStyle: '#F2F2F2',
+            strokeStyle: '#AAAAAA',
+            lineWidth: 10,
+            fontColor: '#ff0000',
+          }]
+        }
+      });
+    </script>
+  </body>
+</html>
