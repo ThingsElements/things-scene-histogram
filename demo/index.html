@@ -61,8 +61,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                bounds="{{bounds}}">
         <fieldset>
           <legend>histogram properties</legend>
-          <label>value</label>
-          <input type="number" value-as-number="{{target.value::change}}" min="0" max="100" step="1"/>
+          <label>top title</label>
+          <input type="number" value="{{target.topTitle::change}}"/>
+          <label>bottom title</label>
+          <input type="number" value="{{target.bottomTitle::change}}"/>
+          <label>left title</label>
+          <input type="number" value="{{target.leftTitle::change}}"/>
+          <label>show 3-sigma line</label>
+          <input type="checkbox" checked="{{model.show3SigmaLine::change}}" required>Locked
+          <label>show normal line</label>
+          <input type="checkbox" checked="{{model.showNormalLine::change}}" required>Locked
+          <label>show spec line</label>
+          <input type="checkbox" checked="{{model.showSpecLine::change}}" required>Locked
+          <label>show grid line</label>
+          <input type="checkbox" checked="{{model.showGridLine::change}}" required>Locked
+          <label>show bar label</label>
+          <input type="checkbox" checked="{{model.showBarLabel::change}}" required>Locked
+          <label>auto scale-x</label>
+          <input type="checkbox" checked="{{model.autoScaleX::change}}" required>Locked
+          <label>auto scale-y</label>
+          <input type="checkbox" checked="{{model.autoScaleY::change}}" required>Locked
+          <label>precision</label>
+          <input type="number" value-as-number="{{target.precision::change}}" min="0" max="10" step="1"/>
+          <label>min-x</label>
+          <input type="number" value-as-number="{{target.minX::change}}" min="0" max="10" step="1"/>
+          <label>max-x</label>
+          <input type="number" value-as-number="{{target.maxX::change}}" min="0" max="10" step="1"/>
+          <label>min-y</label>
+          <input type="number" value-as-number="{{target.minY::change}}" min="0" max="10" step="1"/>
+          <label>max-y</label>
+          <input type="number" value-as-number="{{target.maxY::change}}" min="0" max="10" step="1"/>
+          <label>step-y</label>
+          <input type="number" value-as-number="{{target.stepY::change}}" min="0" max="10" step="1"/>
         </fieldset>
       </things-scene-properties>
 
@@ -82,16 +112,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             left: 100,
             width: 600,
             height: 400,
-            topTitle: 'Top Title',  
-            bottomTitle: 'Bottom Title', 
-            leftTitle: 'Left Title', 
+            topTitle: 'Top Title',
+            bottomTitle: 'Bottom Title',
+            leftTitle: 'Left Title',
             show3SigmaLine: true,
             showNormalLine: true,
             showSpecLimit: true,
             showGridLine: true,
             showBarLabel: true,
-            bgColor: 'gray',  // Color.WhiteSmoke
-            barColor: 'red',   // Color.FromArgb(81, 121, 214)
             precision: 4,   // 차트 표시 소수점 자릿수
             autoScaleX: true,   // X축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
             autoScaleY: true,   // Y축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
