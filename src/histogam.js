@@ -4,7 +4,6 @@ var { Component, Rect } = scene
 
 const CHART_BORDER_PIXELS = 10
 const CHART_Y_SCALE_STEP = 5
-const CHART_Y_SCALE_STEP = 5
 
 export default class Histogam extends Rect {
 
@@ -85,22 +84,22 @@ export default class Histogam extends Rect {
 
   // 차트 데이터 추가
   addValue(v) {
-    this.data.push(v);
+    this.model.data.push(v);
   }
 
   // 차트 데이터 배열 추가
   setData(data) {
-    this.data = data;
+    this.model.data = data;
   }
 
   // 차트 데이터 초기화
   resetData() {
-    this.data = [];
+    this.model.data = [];
   }
 
   // 차트 데이터 갯수
   getDataCount() {
-    return this.data.length;
+    return this.model.data.length;
   }
 
   // 차트 데이터 설정 초기화
@@ -302,13 +301,15 @@ export default class Histogam extends Rect {
     context.fontWeight = 'bold'
     context.textBaseline = 'middle'
 
-
     if (topTitle){
+      context.fillText(topTitle, rect.x + rect.w / 2, rect.y)
     }
     if (bottomTitle){
+      context.fillText(bottomTitle, rect.x + rect.w / 2, rect.y + rect.h - 2)
     }
     if (leftTitle){
       context.rotate(-Math.PI / 2)
+      context.fillText(leftTitle, rect.x + 5, rect.y + rect.h / 2)
       context.rotate(Math.PI / 2)
     }
   }
@@ -355,7 +356,6 @@ export default class Histogam extends Rect {
     this.minX = min;
     this.maxX = max;
 
-    var path; // Line 출력 좌표
     var maxTextSize = 0; // X축 문자 최대 넓이
     var prevXPos = 0; // 전 X축 X좌표
     var passCount = 0; // x축 출력 제외 순번
@@ -363,12 +363,22 @@ export default class Histogam extends Rect {
 
     ypos = r.y + r.h;
 
+    // 글자 스타일 지정
+    context.fontSize = '10px'
+    context.fontFamily = 'Verdana'
+    context.textBaseline = 'middle'
+    context.strokeStyle = '#666'
+    context.lineWidth = 1
+
     // X축 문자 최대 가로 넓이 계산
     for ( var i = 0; i < this.binMesh.length; i++) {
       xpos = r.x + ((this.binMesh[i] - min) * r.w) / (max - min);
       var text = '';
       if(!!Number(this.binMesh[i])){
+        text = this.binMesh[i].toFixed(precision);
       }
+
+      context.fillText(text, xpos, ypos + 10)
       
       var tBox = t.getBBox();
       maxTextSize = Math.max(maxTextSize, tBox.width);
@@ -395,17 +405,16 @@ export default class Histogam extends Rect {
       // passCount에 따른 X축 출력
       if (iCount % passCount == 0) {
         // X축 라인, 문자
-        path = 'M' + xpos + ',' + (ypos + 5) + 'L' + xpos + ',' + ypos;
-        // TODO 디자인: 보조 X축 Line와 문자
-        this.surface.add({
-          type : 'path',
-          path : path,
-          'stroke' : '#666'   
-        }).show(true);
+        context.moveTo(xpos, ypos + 5)
+        context.lineTo(xpos, ypos)
+        context.stroke()
+
         var text = '';
         if(!!Number(this.binMesh[i])){
-          text = this.binMesh[i].toFixed(this.precision);
+          text = this.binMesh[i].toFixed(precision);
         }
+        context.fontColor = '#666'
+        context.fillText(text, xpos, ypos + 10)
       }
       iCount++;
     }
@@ -422,53 +431,56 @@ export default class Histogam extends Rect {
     }
 
     // rect 하단에 보조 X축 라인출력
-    path = 'M' + (r.x - 20) + ',' + ypos + 'L' + (r.x + r.w + 20) + ',' + ypos;
-    this.surface.add({
-      type : 'path',
-      path : path,
-      'stroke' : '#666'
-    }).show(true);
+    context.moveTo(r.x - 20, ypos)
+    context.lineTo(r.x + r.w + 20, ypos)
+    context.stroke()
+
+
     var szstep = (this.maxX - this.minX) / CHART_Y_SCALE_STEP;
 
     // rect 하단에 보조 X축 출력
     for ( var i = 0; i <= CHART_Y_SCALE_STEP; i++) {
       var v = this.minX + szstep * i;
       var xpos = r.x + ((v - min) * r.w) / (max - min);
-      path = 'M' + xpos + ',' + (ypos + 5) + 'L' + xpos + ',' + ypos;
 
       // TODO 디자인: 보조 X축 Line와 문자
-      this.surface.add({
-        type : 'path',
-        path : path,
-        'stroke' : '#666'
-      }).show(true);
+      context.moveTo(xpos, ypos + 5)
+      context.lineTo(xpos, ypos)
+      context.stroke()
+
+
       var text = '';
       if(!!Number(this.v)){
-        text = this.v.toFixed(this.precision);
+        text = this.v.toFixed(precision);
       }
+      context.fontColor = '#666'
+      context.fillText(text, xpos, ypos + 10)
     }
   }
 
   // 차트 Y축 그리기
+  drawYAxis(context, r) {
     var min = 0, max, ypos, szstep, yinterval;
+    var { minY, maxY, stepY, autoScaleY, showGridLine, alpha = 1} = this.model
 
     //BAR 차트 값에 max 값을 계산
     max = Math.floor(Math.max.apply(null, this.freqData));
 
-    if (this.autoScaleY) {
+    if (autoScaleY) {
       max += 5;
       max = max - max % 5;
     } else {
-      max = this.maxY;
+      min = minY;
+      max = maxY;
     }
 
-    if (max < this.stepY)
-      max = this.stepY;
+    if (max < stepY)
+      max = stepY;
 
-    this.maxY = max;
+    maxY = max;
 
-    if (this.stepY > 0) {
-      yinterval = this.stepY;
+    if (stepY > 0) {
+      yinterval = stepY;
       szstep = Math.floor((max - min) / yinterval);
     } else {
       if (max < 10) {
@@ -484,101 +496,89 @@ export default class Histogam extends Rect {
       yinterval = (max - min) / szstep;
     }
 
+    context.fontSize = '10px'
+    context.fontFamily = 'Verdana'
+    context.textBaseline = 'end'
+    context.fontColor = '#666'
+    context.strokeStyle = '#666'
+    context.lineWidth = 1
+
     for ( var i = 0; i <= szstep; i++) {
       var v = min + yinterval * i;
       ypos = (r.y + r.h) - ((v - min) * r.h) / (max - min);
       path = 'M' + (r.x - 5) + ',' + ypos + 'L' + r.x + ',' + ypos;
 
       // TODO 디자인: Y축 문자, 라인
-      this.surface.add({
-        type : 'path',
-        path : path,
-        'stroke' : '#666'   
-      }).show(true);
-      this.surface.add({
-        type : 'text',
-        'font-size' : '10px',
-        'font-family' : 'Verdana',
-        'fill' : '#666',
-        'text-anchor' : 'end',
-        text : v,
-        x : r.x - 10,
-        y : ypos
-      }).show(true);
+      context.moveTo(r.x - 5, ypos)
+      context.lineTo(r.x, ypos)
+      context.stroke()
+
+      context.fillText(v, r.x - 10, ypos)
 
       // TODO 디자인: 그리드 라인
-      if (this.showGridLine) {
-        path = 'M' + (r.x + 1) + ',' + ypos + 'L' + (r.x + r.w) + ',' + ypos;
-        this.surface.add({
-          type : 'path',
-          path : path,
-          'opacity' : 0.2
-        }).show(true);
+      if (showGridLine) {
+        context.globalAlpha = 0.2 * alpha
+        context.moveTo(r.x + 1, ypos)
+        context.lineTo(r.x + r.w, ypos)
+        context.stroke()
       }
     }
+    context.globalAlpha = alpha
   }
 
   // BAR 차트 그리기
-  drawBar(r) {
+  drawBar(context, r) {
     var yl, xp1, xp2, hp, yp;
+    var { minX, maxX, minY, maxY, showBarLabel } = this.model
 
     for ( var i = 0; i < this.binMesh.length - 1; i++) {
       yl = this.freqData[i];
 
-      xp1 = r.x + ((this.binMesh[i] - this.minX) * r.w) / (this.maxX - this.minX); // x
+      xp1 = r.x + ((this.binMesh[i] - minX) * r.w) / (maxX - minX); // x
       // pixels
-      xp2 = r.x + ((this.binMesh[i + 1] - this.minX) * r.w) / (this.maxX - this.minX);
-      hp = (yl - this.minY) * r.h / (this.maxY - this.minY); // height
+      xp2 = r.x + ((this.binMesh[i + 1] - minX) * r.w) / (maxX - minX);
+      hp = (yl - minY) * r.h / (maxY - minY); // height
       // pixels
 
       yp = r.y + r.h - hp;
 
       // TODO 디자인: BAR차트 막대
       if (hp > 0) {
-        this.surface.add({
-          type : 'rect',
-          x : xp1,
-          y : yp,
-          width : xp2 - xp1,
-          height : hp,
-          fill : '#86c838',
-          // opacity : '0.2',
-          stroke : '#fff',
-          'stroke-width' : 2
-        }).show(true);
+        context.fillStyle = '#86c838'
+        context.strokeStyle = '#fff'
+        context.lineWidth = 2
+        context.rect(xp1, yp, xp2 - xp1, hp)
       }
 
       // TODO 디자인: BAR차트 막대위 문자
-      if (this.showBarLabel) {
+      if (showBarLabel) {
         yp = Math.min(yp + hp / 2, r.y + r.h - 20);
-        this.surface.add({
-          type : 'text',
-          'text-anchor' : 'middle',
-          'font-size' : '10px',
-          'font-family' : 'Verdana',
-          //TODO : 색상 흰색은 안보임
-          //'fill' : '#fff',
-          'fill' : '#ff0000',
-          text : this.freqData[i],
-          x : (xp1 + xp2) / 2,
-          y : yp
-        }).show(true);
+
+        context.fontSize = '10px'
+        context.fontFamily = 'Verdana'
+        context.textBaseline = 'middle'
+        context.fontColor = '#ff0000'
+
+        context.fillText(this.freqData[i], (xp1 + xp2) / 2, yp)
       }
     }
   }
 
   // Line 차트 그리기
-  drawNormalLine(r) {
-    var min, max;
+  drawNormalLine(context, r) {
 
-    min = r.x;
-    max = r.x + r.w;
+    var { maxX, minX, alpha = 1 } = this.model
+    var min = r.x;
+    var max = r.x + r.w;
 
-    var pos = [];
-    var cnt = 0;
+    // TODO 디자인: 라인 차트 라인, 라인 배경
 
-    for ( var i = min; i <= max; i++) {
-      var x = (i - min) * (this.maxX - this.minX) / r.w + this.minX;
+    context.strokeStyle = '#017ed5'
+    context.lineWidth = 1
+    context.globalAlpha = 0.4 * alpha
+
+    for ( var i = min + 1; i <= max; i++) {
+      var x = (i - min) * (maxX - minX) / r.w + minX;
 
       var dnormal = Stat.dnormal(x, this.mean, this.stddev);
 
@@ -590,91 +590,65 @@ export default class Histogam extends Rect {
       if (ypos > (r.y + r.h))
         continue;
 
-      pos[cnt++] = i + ',' + Math.floor(ypos);
+      if(i == min)
+        context.moveTo(i, Math.floor(ypos))
+      else
+        context.lineTo(i, Math.floor(ypos))
     }
 
-    pos[cnt++] = (r.x + r.w) + ',' + (r.y + r.h);
-    pos[cnt++] = (r.x) + ',' + (r.y + r.h);
+    context.stroke()
 
-    // TODO 디자인: 라인 차트 라인, 라인 배경
-    var path = 'M' + pos.join('L');
-    this.surface.add({
-      type : 'path',
-      path : path,
-      'fill' : '#abd7f9',
-      'opacity' : 0.4,
-      'stroke' : '#017ed5',
-      'stroke-width' : 1
-    }).show(true);
+    context.globalAlpha = alpha
+
   }
 
   // Mean, 3Sigma Line 그리기
-  draw3SLine(r) {
+  draw3SLine(context, r) {
     /* Mean Line 그리기 */
-
+    var { minX, maxX, showSpecLimit, precision } = this.model
     var origin = {
       x : r.x,
       y : r.y + r.h
     };
-    var min = this.minX, max = this.maxX;
+    var min = minX, max = maxX;
 
     var xpos = origin.x + (((this.mean - min) * r.w) / (max - min));
     var ypos = origin.y;
 
     //TODO 디자인: 문자(M)
+    context.fontSize = '12px'
+    context.fontFamily = 'Verdana'
+    context.textBaseline = 'middle'
+    context.fontColor = '#da5165'
+    context.strokeStyle = '#da5165'
+    context.lineWidth = 1
+
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
-      this.surface.add({
-        type : 'path',
-        path : 'M' + xpos + ',' + ypos + 'L' + xpos + ',' + (ypos - r.h - 10),
-        stroke : '#da5165'
-      }).show(true);
-      this.surface.add({
-        type : 'text',
-        'font-family' : 'Verdana',
-        'font-size' : '12px',
-        'text-anchor' : 'middle',
-        //'opacity' : 1.0,
-        'fill' : '#da5165',
-        text : 'M',
-        x : xpos,
-        y : ypos - r.h - 15
-      }).show(true);
+
+      
+      context.moveTo(xpos, ypos)
+      context.lineTo(xpos, ypos - r.h - 10)
+      context.stroke()
+
+      context.fillText('M', xpos, ypos - r.h - 15)
     }
 
     var textHeight = 20;
 
-    if (this.showSpecLimit) {
+    if (showSpecLimit) {
       var text = '';
       if(!!Number(this.mean)){
-        text = this.mean.toFixed(this.precision);
+        text = this.mean.toFixed(precision);
       }
-      this.surface.add({
-        type : 'text',
-        'font-size' : '10px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#da5165',
-        text : text,
-        x : xpos,
-        y : ypos + textHeight * 2
-      }).show(true);
+      context.fontSize = '10px'
+      context.fillText(text, xpos, ypos + textHeight * 2)
     } else {
       var text = '';
       if(!!Number(this.mean)){
-        text = this.mean.toFixed(this.precision);
+        text = this.mean.toFixed(precision);
       }
-      this.surface.add({
-        type : 'text',
-        'font-size' : '10px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#da5165',
-        text : text,
-        x : xpos,
-        y : ypos + textHeight
-      }).show(true);
+      context.fontSize = '10px'
+      context.fillText(text, xpos, ypos + textHeight)
     }
 
     if (this.stddev == 0)
@@ -689,165 +663,105 @@ export default class Histogam extends Rect {
 
     //TODO 디자인: 문자(-3s)
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
-      this.surface.add({
-        type : 'path',
-        path : 'M' + xpos + ',' + ypos + 'L' + xpos + ',' + (ypos - r.h - 10),
-        stroke : '#da5165'
-      }).show(true);
-      this.surface.add({
-        type : 'text',
-        'font-size' : '12px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#da5165',
-        text : '-3s',
-        x : xpos,
-        y : ypos - r.h - 15
-      }).show(true);
+
+      context.strokeStyle = '#da5165'
+      context.lineWidth = 1
+      context.moveTo(xpos, ypos)
+      context.lineTo(xpos, ypos - r.h - 10)
+      context.stroke()
+
+      context.fontSize = '12px'
+      context.fillText('-3s', xpos, ypos - r.h - 15)
     }
 
-    if (this.showSpecLimit) {
+    if (showSpecLimit) {
       var text = '';
       if(!!Number(l3sigma)){
-        text = l3sigma.toFixed(this.precision);
+        text = l3sigma.toFixed(precision);
       }
-      this.surface.add({
-        type : 'text',
-        'font-size' : '10px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#da5165',
-        text :  text,
-        x : xpos,
-        y : ypos + textHeight * 2
-      }).show(true);
+      context.fontSize = '10px'
+      context.fillText(text, xpos, ypos + textHeight * 2)
     } else {
       var text = '';
       if(!!Number(l3sigma)){
-        text = l3sigma.toFixed(this.precision);
+        text = l3sigma.toFixed(precision);
       }
-      this.surface.add({
-        type : 'text',
-        'font-size' : '10px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#da5165',
-        text :  text,
-        x : xpos,
-        y : ypos + textHeight
-      }).show(true);
+      context.fontSize = '10px'
+      context.fillText(text, xpos, ypos + textHeight)
     }
 
     xpos = origin.x + (((u3sigma - min) * r.w) / (max - min));
 
     //TODO 디자인: 문자(3s)
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
-      this.surface.add({
-        type : 'path',
-        path : 'M' + xpos + ',' + ypos + 'L' + xpos + ',' + (ypos - r.h - 10),
-        stroke : '#da5165'
-      }).show(true);
-      this.surface.add({
-        type : 'text',
-        'font-size' : '12px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#da5165',
-        text : '3s',
-        x : xpos,
-        y : ypos - r.h - 15
-      }).show(true);
+
+      context.strokeStyle = '#da5165'
+      context.lineWidth = 1
+      context.moveTo(xpos, ypos)
+      context.lineTo(xpos, ypos - r.h - 10)
+      context.stroke()
+
+      context.fontSize = '12px'
+      context.fillText('3s', xpos, ypos - r.h - 15)
     }
 
     if (this.showSpecLimit) {
       var text = '';
       if(!!Number(u3sigma)){
-        text = u3sigma.toFixed(this.precision);
+        text = u3sigma.toFixed(precision);
       }
-      this.surface.add({
-        type : 'text',
-        'font-size' : '10px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#da5165',
-        text : text,
-        x : xpos,
-        y : ypos + textHeight * 2
-      }).show(true);
+      context.fontSize = '10px'
+      context.fillText(text, xpos, ypos + textHeight * 2)
     } else {
       var text = '';
       if(!!Number(u3sigma)){
-        text = u3sigma.toFixed(this.precision);
+        text = u3sigma.toFixed(precision);
       }
-      this.surface.add({
-        type : 'text',
-        'font-size' : '10px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#da5165',
-        text : text,
-        x : xpos,
-        y : ypos + textHeight
-      }).show(true);
+      context.fontSize = '10px'
+      context.fillText(text, xpos, ypos + textHeight)
     }
   }
 
   // Target, Spec Line 그리기
-  drawSpecLine(r) {
+  drawSpecLine(context, r) {
     /* Target Line 그리기 */
-
+    var { minX, maxX, precision } = this.model
     var origin = {
       x : r.x,
       y : r.y + r.h
     };
-    var min = this.minX, max = this.maxX;
+    var min = minX, max = maxX;
 
     var xpos = origin.x + (((this.target - min) * r.w) / (max - min));
     var ypos = origin.y;
 
     //TODO 디자인: 문자(T)
+    context.fontSize = '10px'
+    context.fontFamily = 'Verdana'
+    context.textBaseline = 'middle'
+    context.fontColor = '#ffa500'
+    context.strokeStyle = '#ffa500'
+    context.lineWidth = 1
+
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
-      this.surface.add({
-        type : 'path',
-        path :'M' + xpos + ',' + ypos + 'L' + xpos + ',' + (ypos - r.h - 0),
-        'stroke' : '#ffa500'
-      }).show(true);
-      this.surface.add({
-        type : 'text',
-        'font-size' : '11px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#ffa500',
-        text : 'T',
-        x : xpos,
-        y : ypos - r.h - 5
-      }).show(true);
+
+      
+      context.moveTo(xpos, ypos)
+      context.lineTo(xpos, ypos - r.h)
+      context.stroke()
+
+      context.fontSize = '11px'
+      context.fillText('T', xpos, ypos - r.h - 5)
     }
 
     var textHeight = 25;
     
     var text = '';
     if(!!Number(this.target)){
-      text = this.target.toFixed(this.precision);
+      text = this.target.toFixed(precision);
     }
-    this.surface.add({
-      type : 'text',
-      'font-size' : '10px',
-      'font-family' : 'Verdana',
-      'text-anchor' : 'middle',
-      'opacity' : 1.0,
-      'fill' : '#ffa500',
-      text :text,
-      x : xpos,
-      y :ypos + textHeight
-    }).show(true);
+    context.fontSize = '10px'
+    context.fillText(text, xpos, ypos + textHeight)
 
     if (this.stddev == 0)
       return;
@@ -857,73 +771,38 @@ export default class Histogam extends Rect {
     xpos = origin.x + (((this.lsl - min) * r.w) / (max - min));
 
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
-      this.surface.add({
-        type : 'path',
-        path :'M' + xpos + ',' + ypos + 'L' + xpos + ',' + (ypos - r.h - 0),
-        'stroke' : '#ffa500'
-      }).show(true);
-      this.surface.add({
-        type : 'text',
-        'font-size' : '11px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#ffa500',
-        text : 'LSL',
-        x : xpos,
-        y : ypos - r.h - 5
-      }).show(true);
+      context.moveTo(xpos, ypos)
+      context.lineTo(xpos, ypos - r.h)
+      context.stroke()
+
+      context.fontSize = '11px'
+      context.fillText('LSL', xpos, ypos - r.h - 5)
     }
     var text = '';
     if(!!Number(this.lsl)){
-      text = this.lsl.toFixed(this.precision);
+      text = this.lsl.toFixed(precision);
     }
-    this.surface.add({
-      type : 'text',
-      'font-size' : '10px',
-      'font-family' : 'Verdana',
-      'text-anchor' : 'middle',
-      'opacity' : 1.0,
-      'fill' : '#ffa500',
-      text :text,
-      x : xpos,
-      y :ypos + textHeight
-    }).show(true);
+
+    context.fontSize = '10px'
+    context.fillText(text, xpos, ypos + textHeight)
     
     xpos = origin.x + (((this.usl - min) * r.w) / (max - min));
 
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
-      this.surface.add({
-        type : 'path',
-        path : 'M' + xpos + ',' + ypos + 'L' + xpos + ',' + (ypos - r.h - 0),
-        'stroke' : '#ffa500'
-      }).show(true);
-      this.surface.add({
-        type : 'text',
-        'font-size' : '11px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        'opacity' : 1.0,
-        'fill' : '#ffa500',
-        text : 'USL',
-        x : xpos,
-        y : ypos - r.h - 5
-      }).show(true);
+
+      context.moveTo(xpos, ypos)
+      context.lineTo(xpos, ypos - r.h)
+      context.stroke()
+
+      context.fontSize = '11px'
+      context.fillText('USL', xpos, ypos - r.h - 5)
     }
     if(!!Number(this.usl)){
-      text = this.usl.toFixed(this.precision);
+      text = this.usl.toFixed(precision);
     }
-    this.surface.add({
-      type : 'text',
-      'font-size' : '10px',
-      'font-family' : 'Verdana',
-      'text-anchor' : 'middle',
-      'opacity' : 1.0,
-      'fill' : '#ffa500',
-      text :text,
-      x : xpos,
-      y : ypos + textHeight
-    }).show(true);
+
+    context.fontSize = '11px'
+    context.fillText(text, xpos, ypos + textHeight)
   }
 }
 
