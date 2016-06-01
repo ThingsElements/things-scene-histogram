@@ -62,35 +62,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <fieldset>
           <legend>histogram properties</legend>
           <label>top title</label>
-          <input type="number" value="{{target.topTitle::change}}"/>
+          <input type="text" value="{{target.topTitle::change}}"/>
           <label>bottom title</label>
-          <input type="number" value="{{target.bottomTitle::change}}"/>
+          <input type="text" value="{{target.bottomTitle::change}}"/>
           <label>left title</label>
-          <input type="number" value="{{target.leftTitle::change}}"/>
+          <input type="text" value="{{target.leftTitle::change}}"/>
           <label>show 3-sigma line</label>
-          <input type="checkbox" checked="{{model.show3SigmaLine::change}}" required>Locked
+          <input type="checkbox" checked="{{target.show3SigmaLine::change}}" required>show 3-sigma line
           <label>show normal line</label>
-          <input type="checkbox" checked="{{model.showNormalLine::change}}" required>Locked
+          <input type="checkbox" checked="{{target.showNormalLine::change}}" required>show normal line
           <label>show spec line</label>
-          <input type="checkbox" checked="{{model.showSpecLine::change}}" required>Locked
+          <input type="checkbox" checked="{{target.showSpecLine::change}}" required>show spec line
           <label>show grid line</label>
-          <input type="checkbox" checked="{{model.showGridLine::change}}" required>Locked
+          <input type="checkbox" checked="{{target.showGridLine::change}}" required>show grid line
           <label>show bar label</label>
-          <input type="checkbox" checked="{{model.showBarLabel::change}}" required>Locked
+          <input type="checkbox" checked="{{target.showBarLabel::change}}" required>show bar label
           <label>auto scale-x</label>
-          <input type="checkbox" checked="{{model.autoScaleX::change}}" required>Locked
+          <input type="checkbox" checked="{{target.autoScaleX::change}}" required>auto scale-x
           <label>auto scale-y</label>
-          <input type="checkbox" checked="{{model.autoScaleY::change}}" required>Locked
+          <input type="checkbox" checked="{{target.autoScaleY::change}}" required>auto scale-y
           <label>precision</label>
           <input type="number" value-as-number="{{target.precision::change}}" min="0" max="10" step="1"/>
           <label>min-x</label>
           <input type="number" value-as-number="{{target.minX::change}}" min="0" max="10" step="1"/>
           <label>max-x</label>
-          <input type="number" value-as-number="{{target.maxX::change}}" min="0" max="10" step="1"/>
+          <input type="number" value-as-number="{{target.maxX::change}}" min="0" max="1000" step="1"/>
           <label>min-y</label>
           <input type="number" value-as-number="{{target.minY::change}}" min="0" max="10" step="1"/>
           <label>max-y</label>
-          <input type="number" value-as-number="{{target.maxY::change}}" min="0" max="10" step="1"/>
+          <input type="number" value-as-number="{{target.maxY::change}}" min="0" max="1000" step="1"/>
           <label>step-y</label>
           <input type="number" value-as-number="{{target.stepY::change}}" min="0" max="10" step="1"/>
         </fieldset>
@@ -103,13 +103,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var app = document.querySelector('#app')
 
         app.model = {
-          fillStyle: '#0EB22A',
+          // fillStyle: '#0EB22A',
           width: 800,
           height: 600,
           components: [{
-            type: 'histogam',
-            top: 100,
-            left: 100,
+            type: 'histogram',
+            top: 10,
+            left: 10,
             width: 600,
             height: 400,
             topTitle: 'Top Title',
@@ -123,11 +123,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             precision: 4,   // 차트 표시 소수점 자릿수
             autoScaleX: true,   // X축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
             autoScaleY: true,   // Y축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
-            minX: 0,  // 사용자 정의 X축 최소값
-            maxX: 100000,   // 사용자 정의 X축 최대값
+            minX: 100,  // 사용자 정의 X축 최소값
+            maxX: 150,   // 사용자 정의 X축 최대값
             minY: 0,  // 사용자 정의 Y축 최소값
-            maxY: 100, // 사용자 정의 Y축 최대값
-            stepY: 0,   //Y축 max 최소값
+            maxY: 25, // 사용자 정의 Y축 최대값
+            stepY: 5,   //Y축 max 최소값
             data: [
               125.36,
               126.66,

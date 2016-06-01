@@ -29,11 +29,13 @@ export function stddev(data, mean) {
   }
 
   // Math.pow: 제곱 구하기(Ex) Math.pow(3,2) -> 3제곱(3의 2승)
-  // Ext.Array.sum: 배열에 합계
-  // Ext.Array.map: 함수 반환 값으로 새로운 Array 생성
-  var variance = Ext.Array.sum(Ext.Array.map(data, function(v) {
-    return Math.pow(v - mean, 2);
-  })) / data.length;
+  // Array.sum: 배열에 합계
+  // Array.map: 함수 반환 값으로 새로운 Array 생성
+  // var variance = Array.sum(Ext.Array.map(data, function(v) {
+  //   return Math.pow(v - mean, 2);
+  // })) / data.length;
+
+  var variance = data.reduce((sum, d) => { return sum + Math.pow(d - mean, 2) }, 0) / data.length
 
   // Math.sqrt: 루트 근사 값
   return Math.sqrt(variance);

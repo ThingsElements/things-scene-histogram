@@ -27,13 +27,13 @@ var Rect = _scene.Rect;
 var CHART_BORDER_PIXELS = 10;
 var CHART_Y_SCALE_STEP = 5;
 
-var Histogam = function (_Rect) {
-  _inherits(Histogam, _Rect);
+var Histogram = function (_Rect) {
+  _inherits(Histogram, _Rect);
 
-  function Histogam(model, context) {
-    _classCallCheck(this, Histogam);
+  function Histogram(model, context) {
+    _classCallCheck(this, Histogram);
 
-    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Histogam).call(this, model, context));
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Histogram).call(this, model, context));
 
     _this.usl = null; // Upper Specification Limit
     _this.target = null;
@@ -52,7 +52,7 @@ var Histogam = function (_Rect) {
     return _this;
   }
 
-  _createClass(Histogam, [{
+  _createClass(Histogram, [{
     key: '_draw',
     value: function _draw(context) {
       var _model = //Y축 max 최소값
@@ -126,12 +126,12 @@ var Histogam = function (_Rect) {
 
         context.beginPath();
 
-        drawChart(context, width, height);
+        this.drawChart(context, width, height);
 
         context.closePath();
 
-        this.drawFill(context);
-        this.drawStroke(context);
+        // this.drawFill(context)
+        // this.drawStroke(context)
 
         context.translate(-left, -top);
       }
@@ -317,24 +317,35 @@ var Histogam = function (_Rect) {
 
       if (data.length < 2 || !Number(width) || !Number(height)) return false;
 
-      // 차트 초기화
-      drawTitle(context, width, height);
+      this.initCalc();
+      this.calculate();
 
-      var rect = getRect(width, height);
-      drawXAxis(context, rect);
-      drawYAxis(context, rect);
-      drawBar(context, rect);
-      drawRegion(context, rect);
+      // 차트 초기화
+      context.beginPath();
+      this.drawTitle(context, width, height);
+
+      var rect = this.getRect(width, height);
+      context.beginPath();
+      this.drawXAxis(context, rect);
+      context.beginPath();
+      this.drawYAxis(context, rect);
+      context.beginPath();
+      this.drawBar(context, rect);
+      context.beginPath();
+      this.drawRegion(context, rect);
       if (showNormalLine === true) {
-        drawNormalLine(context, rect);
+        context.beginPath();
+        this.drawNormalLine(context, rect);
       }
 
       if (show3SigmaLine === true) {
-        draw3SLine(context, rect);
+        context.beginPath();
+        this.draw3SLine(context, rect);
       }
 
       if (showSpecLimit === true) {
-        drawSpecLine(context, rect);
+        context.beginPath();
+        this.drawSpecLine(context, rect);
       }
     }
   }, {
@@ -376,7 +387,7 @@ var Histogam = function (_Rect) {
       };
 
       // TODO 디자인: 차트에 top, left, bottom 문자
-      context.fontColor = '#315A9D';
+      context.fillStyle = '#315A9D';
       context.fontSize = '13px';
       context.fontFamily = 'Verdana';
       context.fontWeight = 'bold';
@@ -389,9 +400,11 @@ var Histogam = function (_Rect) {
         context.fillText(bottomTitle, rect.x + rect.w / 2, rect.y + rect.h - 2);
       }
       if (leftTitle) {
+        context.translate(rect.x + 5, rect.y + rect.h / 2);
         context.rotate(-Math.PI / 2);
         context.fillText(leftTitle, rect.x + 5, rect.y + rect.h / 2);
         context.rotate(Math.PI / 2);
+        context.translate(-rect.x + 5, -(rect.y + rect.h / 2));
       }
     }
     // 차트 사각형 영역 그리기
@@ -456,9 +469,11 @@ var Histogam = function (_Rect) {
       ypos = r.y + r.h;
 
       // 글자 스타일 지정
+      context.beginPath();
+
       context.fontSize = '10px';
       context.fontFamily = 'Verdana';
-      context.textBaseline = 'middle';
+      context.textAlign = 'center';
       context.strokeStyle = '#666';
       context.lineWidth = 1;
 
@@ -472,9 +487,9 @@ var Histogam = function (_Rect) {
 
         context.fillText(text, xpos, ypos + 10);
 
-        var tBox = t.getBBox();
-        maxTextSize = Math.max(maxTextSize, tBox.width);
-        t.remove();
+        // var tBox = t.getBBox();
+        // maxTextSize = Math.max(maxTextSize, tBox.width);
+        // t.remove();
       }
 
       // X축 passCount 계산
@@ -492,6 +507,8 @@ var Histogam = function (_Rect) {
       }
 
       // rect 하단에 X축 출력
+      context.beginPath();
+
       for (var i = 0; i < this.binMesh.length; i++) {
         xpos = r.x + (this.binMesh[i] - min) * r.w / (max - min);
         // passCount에 따른 X축 출력
@@ -505,7 +522,7 @@ var Histogam = function (_Rect) {
           if (!!Number(this.binMesh[i])) {
             text = this.binMesh[i].toFixed(precision);
           }
-          context.fontColor = '#666';
+          context.fillStyle = '#666';
           context.fillText(text, xpos, ypos + 10);
         }
         iCount++;
@@ -543,7 +560,8 @@ var Histogam = function (_Rect) {
         if (!!Number(this.v)) {
           text = this.v.toFixed(precision);
         }
-        context.fontColor = '#666';
+        context.beginPath();
+        context.fillStyle = '#666';
         context.fillText(text, xpos, ypos + 10);
       }
     }
@@ -600,19 +618,23 @@ var Histogam = function (_Rect) {
         yinterval = (max - min) / szstep;
       }
 
+      context.beginPath();
       context.fontSize = '10px';
       context.fontFamily = 'Verdana';
       context.textBaseline = 'end';
-      context.fontColor = '#666';
+      context.fillStyle = '#666';
       context.strokeStyle = '#666';
       context.lineWidth = 1;
 
       for (var i = 0; i <= szstep; i++) {
         var v = min + yinterval * i;
         ypos = r.y + r.h - (v - min) * r.h / (max - min);
-        path = 'M' + (r.x - 5) + ',' + ypos + 'L' + r.x + ',' + ypos;
+
+        context.beginPath();
 
         // TODO 디자인: Y축 문자, 라인
+        context.globalAlpha = alpha;
+
         context.moveTo(r.x - 5, ypos);
         context.lineTo(r.x, ypos);
         context.stroke();
@@ -621,6 +643,7 @@ var Histogam = function (_Rect) {
 
         // TODO 디자인: 그리드 라인
         if (showGridLine) {
+          context.beginPath();
           context.globalAlpha = 0.2 * alpha;
           context.moveTo(r.x + 1, ypos);
           context.lineTo(r.x + r.w, ypos);
@@ -657,20 +680,26 @@ var Histogam = function (_Rect) {
 
         // TODO 디자인: BAR차트 막대
         if (hp > 0) {
+          context.beginPath();
+
           context.fillStyle = '#86c838';
           context.strokeStyle = '#fff';
           context.lineWidth = 2;
           context.rect(xp1, yp, xp2 - xp1, hp);
+          context.stroke();
+          context.fill();
         }
 
         // TODO 디자인: BAR차트 막대위 문자
         if (showBarLabel) {
+          context.beginPath();
+
           yp = Math.min(yp + hp / 2, r.y + r.h - 20);
 
           context.fontSize = '10px';
           context.fontFamily = 'Verdana';
           context.textBaseline = 'middle';
-          context.fontColor = '#ff0000';
+          context.fillStyle = '#ff0000';
 
           context.fillText(this.freqData[i], (xp1 + xp2) / 2, yp);
         }
@@ -693,7 +722,10 @@ var Histogam = function (_Rect) {
 
       // TODO 디자인: 라인 차트 라인, 라인 배경
 
+      context.beginPath();
+
       context.strokeStyle = '#017ed5';
+      context.fillStyle = '#abd7f9';
       context.lineWidth = 1;
       context.globalAlpha = 0.4 * alpha;
 
@@ -713,6 +745,7 @@ var Histogam = function (_Rect) {
       }
 
       context.stroke();
+      context.fill();
 
       context.globalAlpha = alpha;
     }
@@ -740,10 +773,12 @@ var Histogam = function (_Rect) {
       var ypos = origin.y;
 
       //TODO 디자인: 문자(M)
+      context.beginPath();
+
       context.fontSize = '12px';
       context.fontFamily = 'Verdana';
       context.textBaseline = 'middle';
-      context.fontColor = '#da5165';
+      context.fillStyle = '#da5165';
       context.strokeStyle = '#da5165';
       context.lineWidth = 1;
 
@@ -763,6 +798,7 @@ var Histogam = function (_Rect) {
         if (!!Number(this.mean)) {
           text = this.mean.toFixed(precision);
         }
+        context.beginPath();
         context.fontSize = '10px';
         context.fillText(text, xpos, ypos + textHeight * 2);
       } else {
@@ -770,6 +806,7 @@ var Histogam = function (_Rect) {
         if (!!Number(this.mean)) {
           text = this.mean.toFixed(precision);
         }
+        context.beginPath();
         context.fontSize = '10px';
         context.fillText(text, xpos, ypos + textHeight);
       }
@@ -786,6 +823,8 @@ var Histogam = function (_Rect) {
       //TODO 디자인: 문자(-3s)
       if (xpos > r.x - 20 && xpos < r.x + r.w + 20) {
 
+        context.beginPath();
+
         context.strokeStyle = '#da5165';
         context.lineWidth = 1;
         context.moveTo(xpos, ypos);
@@ -801,6 +840,7 @@ var Histogam = function (_Rect) {
         if (!!Number(l3sigma)) {
           text = l3sigma.toFixed(precision);
         }
+        context.beginPath();
         context.fontSize = '10px';
         context.fillText(text, xpos, ypos + textHeight * 2);
       } else {
@@ -808,6 +848,7 @@ var Histogam = function (_Rect) {
         if (!!Number(l3sigma)) {
           text = l3sigma.toFixed(precision);
         }
+        context.beginPath();
         context.fontSize = '10px';
         context.fillText(text, xpos, ypos + textHeight);
       }
@@ -817,6 +858,7 @@ var Histogam = function (_Rect) {
       //TODO 디자인: 문자(3s)
       if (xpos > r.x - 20 && xpos < r.x + r.w + 20) {
 
+        context.beginPath();
         context.strokeStyle = '#da5165';
         context.lineWidth = 1;
         context.moveTo(xpos, ypos);
@@ -827,11 +869,12 @@ var Histogam = function (_Rect) {
         context.fillText('3s', xpos, ypos - r.h - 15);
       }
 
-      if (this.showSpecLimit) {
+      if (showSpecLimit) {
         var text = '';
         if (!!Number(u3sigma)) {
           text = u3sigma.toFixed(precision);
         }
+        context.beginPath();
         context.fontSize = '10px';
         context.fillText(text, xpos, ypos + textHeight * 2);
       } else {
@@ -839,6 +882,7 @@ var Histogam = function (_Rect) {
         if (!!Number(u3sigma)) {
           text = u3sigma.toFixed(precision);
         }
+        context.beginPath();
         context.fontSize = '10px';
         context.fillText(text, xpos, ypos + textHeight);
       }
@@ -866,10 +910,12 @@ var Histogam = function (_Rect) {
       var ypos = origin.y;
 
       //TODO 디자인: 문자(T)
+      context.beginPath();
+
       context.fontSize = '10px';
       context.fontFamily = 'Verdana';
       context.textBaseline = 'middle';
-      context.fontColor = '#ffa500';
+      context.fillStyle = '#ffa500';
       context.strokeStyle = '#ffa500';
       context.lineWidth = 1;
 
@@ -899,6 +945,7 @@ var Histogam = function (_Rect) {
       xpos = origin.x + (this.lsl - min) * r.w / (max - min);
 
       if (xpos > r.x - 20 && xpos < r.x + r.w + 20) {
+
         context.moveTo(xpos, ypos);
         context.lineTo(xpos, ypos - r.h);
         context.stroke();
@@ -937,13 +984,13 @@ var Histogam = function (_Rect) {
     get: function get() {}
   }]);
 
-  return Histogam;
+  return Histogram;
 }(Rect);
 
-exports.default = Histogam;
+exports.default = Histogram;
 
 
-Component.register('Histogam', histogam);
+Component.register('histogram', Histogram);
 
 },{"./stat":3}],2:[function(require,module,exports){
 'use strict';
@@ -952,18 +999,18 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _histogam = require('./histogam');
+var _histogram = require('./histogram');
 
-Object.defineProperty(exports, 'Histogam', {
+Object.defineProperty(exports, 'Histogram', {
   enumerable: true,
   get: function get() {
-    return _interopRequireDefault(_histogam).default;
+    return _interopRequireDefault(_histogram).default;
   }
 });
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./histogam":1}],3:[function(require,module,exports){
+},{"./histogram":1}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1005,11 +1052,15 @@ function stddev(data, mean) {
   }
 
   // Math.pow: 제곱 구하기(Ex) Math.pow(3,2) -> 3제곱(3의 2승)
-  // Ext.Array.sum: 배열에 합계
-  // Ext.Array.map: 함수 반환 값으로 새로운 Array 생성
-  var variance = Ext.Array.sum(Ext.Array.map(data, function (v) {
-    return Math.pow(v - mean, 2);
-  })) / data.length;
+  // Array.sum: 배열에 합계
+  // Array.map: 함수 반환 값으로 새로운 Array 생성
+  // var variance = Array.sum(Ext.Array.map(data, function(v) {
+  //   return Math.pow(v - mean, 2);
+  // })) / data.length;
+
+  var variance = data.reduce(function (sum, d) {
+    return sum + Math.pow(d - mean, 2);
+  }, 0) / data.length;
 
   // Math.sqrt: 루트 근사 값
   return Math.sqrt(variance);

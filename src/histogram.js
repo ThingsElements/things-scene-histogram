@@ -5,7 +5,7 @@ var { Component, Rect } = scene
 const CHART_BORDER_PIXELS = 10
 const CHART_Y_SCALE_STEP = 5
 
-export default class Histogam extends Rect {
+export default class Histogram extends Rect {
 
   constructor(model, context) {
     super(model, context)
@@ -69,12 +69,12 @@ export default class Histogam extends Rect {
 
       context.beginPath()
 
-      drawChart(context, width, height)
+      this.drawChart(context, width, height)
 
       context.closePath()
 
-      this.drawFill(context)
-      this.drawStroke(context)
+      // this.drawFill(context)
+      // this.drawStroke(context)
       
       context.translate(-left, -top)
     }
@@ -243,24 +243,35 @@ export default class Histogam extends Rect {
     if (data.length < 2 || !Number(width) || !Number(height) )
       return false;
 
+    this.initCalc()
+    this.calculate()
+
     // 차트 초기화 
-    drawTitle(context, width, height);
-    
-    var rect = getRect(width, height);
-    drawXAxis(context, rect);
-    drawYAxis(context, rect);
-    drawBar(context, rect);
-    drawRegion(context, rect);
+    context.beginPath()
+    this.drawTitle(context, width, height);
+
+    var rect = this.getRect(width, height);
+    context.beginPath()
+    this.drawXAxis(context, rect);
+    context.beginPath()
+    this.drawYAxis(context, rect);
+    context.beginPath()
+    this.drawBar(context, rect);
+    context.beginPath()
+    this.drawRegion(context, rect);
     if (showNormalLine === true) {
-      drawNormalLine(context, rect);
+      context.beginPath()
+      this.drawNormalLine(context, rect);
     }
 
     if (show3SigmaLine === true) {
-      draw3SLine(context, rect);
+      context.beginPath()
+      this.draw3SLine(context, rect);
     }
 
     if (showSpecLimit === true) {
-      drawSpecLine(context, rect);
+      context.beginPath()
+      this.drawSpecLine(context, rect);
     }
   }
   
@@ -295,7 +306,7 @@ export default class Histogam extends Rect {
     };
 
     // TODO 디자인: 차트에 top, left, bottom 문자
-    context.fontColor = '#315A9D'
+    context.fillStyle = '#315A9D'
     context.fontSize = '13px'
     context.fontFamily = 'Verdana'
     context.fontWeight = 'bold'
@@ -308,9 +319,11 @@ export default class Histogam extends Rect {
       context.fillText(bottomTitle, rect.x + rect.w / 2, rect.y + rect.h - 2)
     }
     if (leftTitle){
+      context.translate(rect.x + 5, rect.y + rect.h / 2)
       context.rotate(-Math.PI / 2)
       context.fillText(leftTitle, rect.x + 5, rect.y + rect.h / 2)
       context.rotate(Math.PI / 2)
+      context.translate(-rect.x + 5, -(rect.y + rect.h / 2))
     }
   }
   // 차트 사각형 영역 그리기
@@ -364,9 +377,11 @@ export default class Histogam extends Rect {
     ypos = r.y + r.h;
 
     // 글자 스타일 지정
+    context.beginPath()
+
     context.fontSize = '10px'
     context.fontFamily = 'Verdana'
-    context.textBaseline = 'middle'
+    context.textAlign = 'center'
     context.strokeStyle = '#666'
     context.lineWidth = 1
 
@@ -380,9 +395,9 @@ export default class Histogam extends Rect {
 
       context.fillText(text, xpos, ypos + 10)
       
-      var tBox = t.getBBox();
-      maxTextSize = Math.max(maxTextSize, tBox.width);
-      t.remove();
+      // var tBox = t.getBBox();
+      // maxTextSize = Math.max(maxTextSize, tBox.width);
+      // t.remove();
     }
 
     // X축 passCount 계산
@@ -400,6 +415,8 @@ export default class Histogam extends Rect {
     }
 
     // rect 하단에 X축 출력
+    context.beginPath()
+
     for ( var i = 0; i < this.binMesh.length; i++) {
       xpos = r.x + ((this.binMesh[i] - min) * r.w) / (max - min);
       // passCount에 따른 X축 출력
@@ -413,7 +430,7 @@ export default class Histogam extends Rect {
         if(!!Number(this.binMesh[i])){
           text = this.binMesh[i].toFixed(precision);
         }
-        context.fontColor = '#666'
+        context.fillStyle = '#666'
         context.fillText(text, xpos, ypos + 10)
       }
       iCount++;
@@ -453,7 +470,8 @@ export default class Histogam extends Rect {
       if(!!Number(this.v)){
         text = this.v.toFixed(precision);
       }
-      context.fontColor = '#666'
+      context.beginPath()
+      context.fillStyle = '#666'
       context.fillText(text, xpos, ypos + 10)
     }
   }
@@ -496,19 +514,23 @@ export default class Histogam extends Rect {
       yinterval = (max - min) / szstep;
     }
 
+    context.beginPath()
     context.fontSize = '10px'
     context.fontFamily = 'Verdana'
     context.textBaseline = 'end'
-    context.fontColor = '#666'
+    context.fillStyle = '#666'
     context.strokeStyle = '#666'
     context.lineWidth = 1
 
     for ( var i = 0; i <= szstep; i++) {
       var v = min + yinterval * i;
       ypos = (r.y + r.h) - ((v - min) * r.h) / (max - min);
-      path = 'M' + (r.x - 5) + ',' + ypos + 'L' + r.x + ',' + ypos;
+
+      context.beginPath()
 
       // TODO 디자인: Y축 문자, 라인
+      context.globalAlpha = alpha
+
       context.moveTo(r.x - 5, ypos)
       context.lineTo(r.x, ypos)
       context.stroke()
@@ -517,6 +539,7 @@ export default class Histogam extends Rect {
 
       // TODO 디자인: 그리드 라인
       if (showGridLine) {
+        context.beginPath()
         context.globalAlpha = 0.2 * alpha
         context.moveTo(r.x + 1, ypos)
         context.lineTo(r.x + r.w, ypos)
@@ -544,20 +567,26 @@ export default class Histogam extends Rect {
 
       // TODO 디자인: BAR차트 막대
       if (hp > 0) {
+        context.beginPath()
+
         context.fillStyle = '#86c838'
         context.strokeStyle = '#fff'
         context.lineWidth = 2
         context.rect(xp1, yp, xp2 - xp1, hp)
+        context.stroke()
+        context.fill()
       }
 
       // TODO 디자인: BAR차트 막대위 문자
       if (showBarLabel) {
+        context.beginPath()
+
         yp = Math.min(yp + hp / 2, r.y + r.h - 20);
 
         context.fontSize = '10px'
         context.fontFamily = 'Verdana'
         context.textBaseline = 'middle'
-        context.fontColor = '#ff0000'
+        context.fillStyle = '#ff0000'
 
         context.fillText(this.freqData[i], (xp1 + xp2) / 2, yp)
       }
@@ -573,7 +602,10 @@ export default class Histogam extends Rect {
 
     // TODO 디자인: 라인 차트 라인, 라인 배경
 
+    context.beginPath()
+
     context.strokeStyle = '#017ed5'
+    context.fillStyle = '#abd7f9'
     context.lineWidth = 1
     context.globalAlpha = 0.4 * alpha
 
@@ -597,6 +629,7 @@ export default class Histogam extends Rect {
     }
 
     context.stroke()
+    context.fill()
 
     context.globalAlpha = alpha
 
@@ -616,15 +649,16 @@ export default class Histogam extends Rect {
     var ypos = origin.y;
 
     //TODO 디자인: 문자(M)
+    context.beginPath()
+
     context.fontSize = '12px'
     context.fontFamily = 'Verdana'
     context.textBaseline = 'middle'
-    context.fontColor = '#da5165'
+    context.fillStyle = '#da5165'
     context.strokeStyle = '#da5165'
     context.lineWidth = 1
 
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
-
       
       context.moveTo(xpos, ypos)
       context.lineTo(xpos, ypos - r.h - 10)
@@ -640,6 +674,7 @@ export default class Histogam extends Rect {
       if(!!Number(this.mean)){
         text = this.mean.toFixed(precision);
       }
+      context.beginPath()
       context.fontSize = '10px'
       context.fillText(text, xpos, ypos + textHeight * 2)
     } else {
@@ -647,6 +682,7 @@ export default class Histogam extends Rect {
       if(!!Number(this.mean)){
         text = this.mean.toFixed(precision);
       }
+      context.beginPath()
       context.fontSize = '10px'
       context.fillText(text, xpos, ypos + textHeight)
     }
@@ -664,6 +700,8 @@ export default class Histogam extends Rect {
     //TODO 디자인: 문자(-3s)
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
 
+      context.beginPath()
+
       context.strokeStyle = '#da5165'
       context.lineWidth = 1
       context.moveTo(xpos, ypos)
@@ -679,6 +717,7 @@ export default class Histogam extends Rect {
       if(!!Number(l3sigma)){
         text = l3sigma.toFixed(precision);
       }
+      context.beginPath()
       context.fontSize = '10px'
       context.fillText(text, xpos, ypos + textHeight * 2)
     } else {
@@ -686,6 +725,7 @@ export default class Histogam extends Rect {
       if(!!Number(l3sigma)){
         text = l3sigma.toFixed(precision);
       }
+      context.beginPath()
       context.fontSize = '10px'
       context.fillText(text, xpos, ypos + textHeight)
     }
@@ -695,6 +735,7 @@ export default class Histogam extends Rect {
     //TODO 디자인: 문자(3s)
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
 
+      context.beginPath()
       context.strokeStyle = '#da5165'
       context.lineWidth = 1
       context.moveTo(xpos, ypos)
@@ -705,11 +746,12 @@ export default class Histogam extends Rect {
       context.fillText('3s', xpos, ypos - r.h - 15)
     }
 
-    if (this.showSpecLimit) {
+    if (showSpecLimit) {
       var text = '';
       if(!!Number(u3sigma)){
         text = u3sigma.toFixed(precision);
       }
+      context.beginPath()
       context.fontSize = '10px'
       context.fillText(text, xpos, ypos + textHeight * 2)
     } else {
@@ -717,6 +759,7 @@ export default class Histogam extends Rect {
       if(!!Number(u3sigma)){
         text = u3sigma.toFixed(precision);
       }
+      context.beginPath()
       context.fontSize = '10px'
       context.fillText(text, xpos, ypos + textHeight)
     }
@@ -736,15 +779,16 @@ export default class Histogam extends Rect {
     var ypos = origin.y;
 
     //TODO 디자인: 문자(T)
+    context.beginPath()
+
     context.fontSize = '10px'
     context.fontFamily = 'Verdana'
     context.textBaseline = 'middle'
-    context.fontColor = '#ffa500'
+    context.fillStyle = '#ffa500'
     context.strokeStyle = '#ffa500'
     context.lineWidth = 1
 
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
-
       
       context.moveTo(xpos, ypos)
       context.lineTo(xpos, ypos - r.h)
@@ -771,6 +815,7 @@ export default class Histogam extends Rect {
     xpos = origin.x + (((this.lsl - min) * r.w) / (max - min));
 
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
+
       context.moveTo(xpos, ypos)
       context.lineTo(xpos, ypos - r.h)
       context.stroke()
@@ -806,4 +851,4 @@ export default class Histogam extends Rect {
   }
 }
 
-Component.register('Histogam', histogam)
+Component.register('histogram', Histogram)

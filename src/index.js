@@ -1,1 +1,1 @@
-export { default as Histogam } from './histogam'
+export { default as Histogram } from './histogram'
