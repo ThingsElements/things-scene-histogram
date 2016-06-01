@@ -1,0 +1,1 @@
+console.error("SyntaxError: /Users/lym/Desktop/newDev/things-scene-histogram/src/histogam.js: Complex binding patterns require an initialization value (729:33) while parsing file: /Users/lym/Desktop/newDev/things-scene-histogram/src/histogam.js");

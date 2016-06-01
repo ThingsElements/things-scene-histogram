@@ -3,30 +3,16 @@ import * as Stat from './stat'
 var { Component, Rect } = scene
 
 const CHART_BORDER_PIXELS = 10
+const CHART_Y_SCALE_STEP = 5
+const CHART_Y_SCALE_STEP = 5
 
 export default class Histogam extends Rect {
 
   constructor(model, context) {
     super(model, context)
 
-  // 차트 데이타 리스트(valueList)
-    this.data = []  
-
-  // 차트 제목 설정
-    this.topTitle = ''  
-    this.bottomTitle = '' 
-    this.leftTitle = '' 
-
-  // 차트 화면표시 설정
-    this.show3SigmaLine = true  
-    this.showNormalLine = true  
-    this.showSpecLimit = true 
-    this.showGridLine = true  
-    this.showBarLabel = true  
-
-  // 차트 테이터 기준값 설정
     this.usl = null  // Upper Specification Limit
-    this.target = null   
+    this.target = null
     this.lsl = null  // Lower Specification Limit
     this.min = null  // 데이터 배열 최소값
     this.max = null  // 데이터 배열 최대값
@@ -38,22 +24,7 @@ export default class Histogam extends Rect {
     this.binlast = null  // X축 마지막값
     this.binwidth = null   // X축 간격(BAR 차트 넓이)
     this.binsize = null  // BAR 차트 생성 갯수
-    this.calculated = false  //차트 기준값 계산 완료 상태(true : 완료, false: 미완료)
-
-  // 차트 색상 설정
-    this.bgColor = null  // Color.WhiteSmoke
-    this.barColor = null   // Color.FromArgb(81, 121, 214)
-
-    this.precision = 4   // 차트 표시 소수점 자릿수
-
-    this.autoScaleX = true   // X축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
-    this.autoScaleY = true   // Y축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
-    this.minX = 0  // 사용자 정의 X축 최소값
-    this.maxX = 100000   // 사용자 정의 X축 최대값
-    this.minY = 0  // 사용자 정의 Y축 최소값
-    this.maxY = 100 // 사용자 정의 Y축 최대값
-
-    this.stepY = 0   //Y축 max 최소값
+    this.calculated = false  //차트 기준값 계산 완료 상태(true : 완료, false: 미완료) 
   }
 
   _draw(context) {
@@ -65,7 +36,32 @@ export default class Histogam extends Rect {
       top,
       left,
       width,
-      height
+      height,
+      // 차트 데이타 리스트(valueList)
+      data = [],
+
+    // 차트 제목 설정
+      topTitle = '',  
+      bottomTitle = '', 
+      leftTitle = '', 
+
+    // 차트 화면표시 설정
+      show3SigmaLine = true,  
+      showNormalLine = true,  
+      showSpecLimit = true, 
+      showGridLine = true,  
+      showBarLabel = true,  
+
+      precision = 4,   // 차트 표시 소수점 자릿수
+
+      autoScaleX = true,   // X축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
+      autoScaleY = true,   // Y축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
+      minX = 0,  // 사용자 정의 X축 최소값
+      maxX = 100000,   // 사용자 정의 X축 최대값
+      minY = 0,  // 사용자 정의 Y축 최소값
+      maxY = 100, // 사용자 정의 Y축 최대값
+
+      stepY = 0,   //Y축 max 최소값
     } = this.model;
 
     if(!hidden){
@@ -124,21 +120,23 @@ export default class Histogam extends Rect {
 
   // 차트 데이터 계산
   calculate() {
-    if (this.data.length < 2)
+    var { data } = this.model
+
+    if (data.length < 2)
       return false;
 
-    if(!Number(this.data[0]))
+    if(!Number(data[0]))
       return false;
     
-    this.min = Stat.min(this.data);
-    this.max = Stat.max(this.data);
+    this.min = Stat.min(data);
+    this.max = Stat.max(data);
 
     var range = this.max - this.min;
 
     // BAR 차트 갯수 설정(초기 설정값이 있으면 계산X)
     if (this.binsize === null) {
       // Math.sqrt(루트 근사값), Math.floor(소수점 올림)
-      var bin = Math.floor(Math.sqrt(this.data.length));
+      var bin = Math.floor(Math.sqrt(data.length));
       bin = Math.max(5, bin);
       bin = Math.min(20, bin);
       this.binsize = bin;
@@ -152,8 +150,8 @@ export default class Histogam extends Rect {
     // X축 처음값, 마지막값 설정
     if (range == 0) {
       this.binsize = 5;
-      this.binfirst = Math.floor(this.min) - 2;
-      this.binlast = Math.floor(this.min) + 3;
+      this.binfirst = Math.floor(min) - 2;
+      this.binlast = Math.floor(min) + 3;
     } else {
       var temp = this.min;
 
@@ -192,8 +190,8 @@ export default class Histogam extends Rect {
 
     // BAR 차트 데이터 배열 값 설정
     var sum = 0, idx, dv;
-    for ( var i = 0; i < this.data.length; i++) {
-      dv = this.data[i];
+    for ( var i = 0; i < data.length; i++) {
+      dv = data[i];
       sum += dv;
 
       if (dv === this.binfirst) {
@@ -220,12 +218,12 @@ export default class Histogam extends Rect {
 
     // 데이터 배열 평균 계산 및 설정(초기 설정값이 있으면 계산X)
     if (this.mean === null) {
-      this.mean = sum / this.data.length;
+      this.mean = sum / data.length;
     }
 
     // 데이터 배열 표준 편차 계산
     if (this.stddev === null) {
-      this.stddev = Stat.stddev(this.data, this.mean);
+      this.stddev = Stat.stddev(data, this.mean);
     }
 
     this.calculated = true;
@@ -233,33 +231,37 @@ export default class Histogam extends Rect {
 
   // 차트 그리기(전체 화면 다시그림)
   // * 화면을 각각 개별로 다시 그리고 싶다면 그린 element를 변수로 저장하고 remove 함수로 삭제
-  drawChart(w, h) {
-    var width = w || this.curWidth;
-    var height = h || this.curHeight;
+  drawChart(context, width, height) {
+
+    var {
+      data,
+      showNormalLine,
+      showSpecLimit,
+      show3SigmaLine
+    } = this.model
 
     // 데이타 배열 체크
-    if (this.data.length < 2 || !Number(width) || !Number(height) )
+    if (data.length < 2 || !Number(width) || !Number(height) )
       return false;
 
     // 차트 초기화 
+    drawTitle(context, width, height);
     
-    this.drawTitle(width, height);
-    
-    var rect = this.getRect(width, height);
-    this.drawXAxis(rect);
-    this.drawYAxis(rect);
-    this.drawBar(rect);
-    this.drawRegion(rect);
-    if (this.showNormalLine === true) {
-      this.drawNormalLine(rect);
+    var rect = getRect(width, height);
+    drawXAxis(context, rect);
+    drawYAxis(context, rect);
+    drawBar(context, rect);
+    drawRegion(context, rect);
+    if (showNormalLine === true) {
+      drawNormalLine(context, rect);
     }
 
-    if (this.show3SigmaLine === true) {
-      this.draw3SLine(rect);
+    if (show3SigmaLine === true) {
+      draw3SLine(context, rect);
     }
 
-    if (this.showSpecLimit === true) {
-      this.drawSpecLine(rect);
+    if (showSpecLimit === true) {
+      drawSpecLine(context, rect);
     }
   }
   
@@ -294,83 +296,49 @@ export default class Histogam extends Rect {
     };
 
     // TODO 디자인: 차트에 top, left, bottom 문자
-    var textattr = {
-      type : 'text',
-      'fill' : '#315A9D',
-      'font-size' : '13px',
-      'font-family' : 'Verdana',
-      'text-anchor' : 'middle',
-      'font-weight' : 'bold'
-    };
-    
+    context.fontColor = '#315A9D'
+    context.fontSize = '13px'
+    context.fontFamily = 'Verdana'
+    context.fontWeight = 'bold'
+    context.textBaseline = 'middle'
+
+
     if (topTitle){
-      var attr = Object.assign({
-        text : topTitle,
-        x : rect.x + rect.w / 2,
-        y : rect.y
-      }, textattr);
-      this.surface.add(attr).show(true);
-
-      context.fillStyle = '#315A9D'
-      context.font....
-
-      context.drawText(....)
     }
     if (bottomTitle){
-      var attr = Object.assign({
-        text : bottomTitle,
-        x : rect.x + rect.w / 2,
-        y : rect.y + rect.h - 2
-      }, textattr);
-      var sprite = this.surface.add(attr);
-      sprite.show(true);
     }
     if (leftTitle){
-      var attr = Object.assign({
-        text : leftTitle,
-        x : rect.x + 5,
-        y : rect.y + rect.h / 2,
-        rotate : {
-          degrees : -90
-        }
-      }, textattr);
-      this.surface.add(attr).show(true);
+      context.rotate(-Math.PI / 2)
+      context.rotate(Math.PI / 2)
     }
   }
   // 차트 사각형 영역 그리기
-  drawRegion(rect) {
+  drawRegion(context, rect) {
     // TODO 디자인: 차트 사각형 영역
-    this.surface.add({
-      type : 'rect',
-      x : rect.x,
-      y : rect.y,
-      width : rect.w,
-      height : rect.h,
-      'stroke' : '#666',
-      'stroke-width' : 1
-    }).show(true);
+    context.strokeStyle = '#666'
+    context.lineWidth = 1
+    context.rect(rect.x, rect.y, rect.w, rect.h)
   }
 
   // 차트 X축 그리기
-  drawXAxis(r) {
-    var CHART_Y_SCALE_STEP = 5;
-
+  drawXAxis(context, r) {
+    var { autoScaleX, show3SigmaLine, showSpecLimit, precision } = this.model
     var min, max, xpos, ypos;
     var textHeight = 15;
 
-    if (this.autoScaleX) {
-      // binMesh, mean, target, usl, lsl 데이터로 최소값, 최대값 생성하여 설정
+    if (autoScaleX) {
+      // this.binMesh, mean, target, usl, lsl 데이터로 최소값, 최대값 생성하여 설정
       min = this.binMesh[0];
       max = this.binMesh[this.binMesh.length - 1];
 
       var vs = [ min, max ];
 
-      if (this.show3SigmaLine) {
+      if (show3SigmaLine) {
         vs.push(this.mean - this.stddev * 3);
         vs.push(this.mean + this.stddev * 3);
       }
 
-      if (this.showSpecLimit) {
+      if (showSpecLimit) {
         vs.push(this.target);
         vs.push(this.lsl);
         vs.push(this.usl);
@@ -400,17 +368,7 @@ export default class Histogam extends Rect {
       xpos = r.x + ((this.binMesh[i] - min) * r.w) / (max - min);
       var text = '';
       if(!!Number(this.binMesh[i])){
-        text = this.binMesh[i].toFixed(this.precision);
       }
-      var t = this.surface.add({
-        type : 'text',
-        'text-anchor' : 'middle',
-        'font-size' : '10px',
-        'font-family' : 'Verdana',
-        text : text,
-        x : xpos,
-        y : ypos + 10
-      }).show(true);
       
       var tBox = t.getBBox();
       maxTextSize = Math.max(maxTextSize, tBox.width);
@@ -448,16 +406,6 @@ export default class Histogam extends Rect {
         if(!!Number(this.binMesh[i])){
           text = this.binMesh[i].toFixed(this.precision);
         }
-        this.surface.add({
-          type : 'text',
-          'fill' : '#666',
-          'text-anchor' : 'middle',
-          'font-size' : '10px',
-          'font-family' : 'Verdana',
-          text : text,
-          x : xpos,
-          y : ypos + 10
-        }).show(true);
       }
       iCount++;
     }
@@ -498,23 +446,10 @@ export default class Histogam extends Rect {
       if(!!Number(this.v)){
         text = this.v.toFixed(this.precision);
       }
-      this.surface.add({
-        type : 'text',
-        'fill' : '#666',
-        'font-size' : '10px',
-        'font-family' : 'Verdana',
-        'text-anchor' : 'middle',
-        text : text,
-        x : xpos,
-        y : ypos + 10
-      }).show(true);
     }
   }
 
   // 차트 Y축 그리기
-  drawYAxis(r) {
-    var CHART_Y_SCALE_STEP = 5;
-
     var min = 0, max, ypos, szstep, yinterval;
 
     //BAR 차트 값에 max 값을 계산
@@ -524,7 +459,6 @@ export default class Histogam extends Rect {
       max += 5;
       max = max - max % 5;
     } else {
-      min = this.minY;
       max = this.maxY;
     }
 
