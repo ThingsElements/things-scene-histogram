@@ -1,4 +1,4 @@
-import Stat from './stat'
+import * as Stat from './stat'
 
 var { Component, Rect } = scene
 
