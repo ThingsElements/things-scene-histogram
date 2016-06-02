@@ -50,7 +50,7 @@ export default class Histogram extends Rect {
       showSpecLimit = true,
       showGridLine = true,
       showBarLabel = true,
-      showSubXAxis = true,
+      showSubXAxis = false,
 
       precision = 4,   // 차트 표시 소수점 자릿수
 

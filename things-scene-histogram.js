@@ -94,7 +94,7 @@ var Histogram = function (_Rect) {
       var _model$showBarLabel = _model.showBarLabel;
       var showBarLabel = _model$showBarLabel === undefined ? true : _model$showBarLabel;
       var _model$showSubXAxis = _model.showSubXAxis;
-      var showSubXAxis = _model$showSubXAxis === undefined ? true : _model$showSubXAxis;
+      var showSubXAxis = _model$showSubXAxis === undefined ? false : _model$showSubXAxis;
       var _model$precision = _model.precision;
       var precision = _model$precision === undefined ? 4 : _model$precision;
       var _model$autoScaleX = _model.autoScaleX;
@@ -1131,4 +1131,4 @@ function dnormal(x, mu, sigma) {
   return ONEBYS2PI * Math.exp(-0.5 * temp);
 }
 
-},{}]},{},[1,2,3]);
+},{}]},{},[2]);
