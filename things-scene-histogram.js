@@ -225,7 +225,6 @@ var Histogram = function (_Rect) {
       var o = Stat.minunit(range / this.binsize);
       this.binwidth = o.value;
       var minunit = o.minunit;
-      console.log(this.binwidth);
       // X축 처음값, 마지막값 설정
       if (range == 0) {
         this.binsize = 5;
@@ -333,30 +332,22 @@ var Histogram = function (_Rect) {
       if (data.length < 2 || !Number(width) || !Number(height)) return false;
 
       // 차트 초기화
-      context.beginPath();
-      this.drawTitle(context, width, height);
 
+      this.drawTitle(context, width, height);
       var rect = this.getRect(width, height);
-      context.beginPath();
+
       this.drawXAxis(context, rect);
-      context.beginPath();
       this.drawYAxis(context, rect);
-      context.beginPath();
       this.drawBar(context, rect);
-      context.beginPath();
       this.drawRegion(context, rect);
+
       if (showNormalLine === true) {
-        context.beginPath();
         this.drawNormalLine(context, rect);
       }
-
       if (show3SigmaLine === true) {
-        context.beginPath();
         this.draw3SLine(context, rect);
       }
-
       if (showSpecLimit === true) {
-        context.beginPath();
         this.drawSpecLine(context, rect);
       }
     }
@@ -448,7 +439,7 @@ var Histogram = function (_Rect) {
 
       var min, max, xpos, ypos;
       var textHeight = 15;
-      console.log('binMesh : ', this.binMesh);
+
       if (autoScaleX) {
         // this.binMesh, mean, target, usl, lsl 데이터로 최소값, 최대값 생성하여 설정
         min = this.binMesh[0];
@@ -488,6 +479,7 @@ var Histogram = function (_Rect) {
       context.font = '10px Verdana';
       context.textAlign = 'center';
       context.strokeStyle = '#666';
+      context.fillStyle = '#666';
       context.lineWidth = 1;
 
       // X축 문자 최대 가로 넓이 계산
@@ -516,8 +508,6 @@ var Histogram = function (_Rect) {
       }
 
       // rect 하단에 X축 출력
-      context.beginPath();
-
       for (var i = 0; i < this.binMesh.length; i++) {
         xpos = r.x + (this.binMesh[i] - min) * r.w / (max - min);
         // passCount에 따른 X축 출력
@@ -531,7 +521,6 @@ var Histogram = function (_Rect) {
           if (!!Number(this.binMesh[i])) {
             text = this.binMesh[i].toFixed(precision);
           }
-          context.fillStyle = '#666';
           context.fillText(text, xpos, ypos + 14);
         }
         iCount++;
@@ -570,9 +559,6 @@ var Histogram = function (_Rect) {
           if (!!Number(v)) {
             text = v.toFixed(precision);
           }
-
-          context.beginPath();
-          context.fillStyle = '#666';
           context.fillText(text, xpos, ypos + 14);
         }
       }
@@ -630,7 +616,6 @@ var Histogram = function (_Rect) {
         yinterval = (max - min) / szstep;
       }
 
-      context.beginPath();
       context.font = '10px Verdana';
       context.textBaseline = 'end';
       context.fillStyle = '#666';
@@ -641,9 +626,8 @@ var Histogram = function (_Rect) {
         var v = min + yinterval * i;
         ypos = r.y + r.h - (v - min) * r.h / (max - min);
 
-        context.beginPath();
-
         // TODO 디자인: Y축 문자, 라인
+        context.beginPath();
         context.globalAlpha = alpha;
 
         context.moveTo(r.x - 5, ypos);
@@ -677,7 +661,7 @@ var Histogram = function (_Rect) {
       var maxY = _model6.maxY;
       var showBarLabel = _model6.showBarLabel;
 
-      console.log('freqData : ', this.freqData);
+
       for (var i = 0; i < this.binMesh.length - 1; i++) {
         yl = this.freqData[i];
         xp1 = r.x + (this.binMesh[i] - minX) * r.w / (maxX - minX); // x
@@ -777,7 +761,7 @@ var Histogram = function (_Rect) {
 
       var xpos = origin.x + (this.mean - min) * r.w / (max - min);
       var ypos = origin.y;
-      console.log(this.mean);
+
       //TODO 디자인: 문자(M)
       context.beginPath();
 
@@ -803,7 +787,6 @@ var Histogram = function (_Rect) {
         if (!!Number(this.mean)) {
           text = this.mean.toFixed(precision);
         }
-        context.beginPath();
         context.font = '10px Verdana';
         context.fillText(text, xpos, ypos + textHeight * 2);
       } else {
@@ -811,7 +794,6 @@ var Histogram = function (_Rect) {
         if (!!Number(this.mean)) {
           text = this.mean.toFixed(precision);
         }
-        context.beginPath();
         context.font = '10px Verdana';
         context.fillText(text, xpos, ypos + textHeight);
       }
@@ -845,7 +827,6 @@ var Histogram = function (_Rect) {
         if (!!Number(l3sigma)) {
           text = l3sigma.toFixed(precision);
         }
-        context.beginPath();
         context.font = '10px Verdana';
         context.fillText(text, xpos, ypos + textHeight * 2);
       } else {
@@ -853,7 +834,6 @@ var Histogram = function (_Rect) {
         if (!!Number(l3sigma)) {
           text = l3sigma.toFixed(precision);
         }
-        context.beginPath();
         context.font = '10px Verdana';
         context.fillText(text, xpos, ypos + textHeight);
       }
@@ -879,7 +859,6 @@ var Histogram = function (_Rect) {
         if (!!Number(u3sigma)) {
           text = u3sigma.toFixed(precision);
         }
-        context.beginPath();
         context.font = '10px Verdana';
         context.fillText(text, xpos, ypos + textHeight * 2);
       } else {
@@ -887,7 +866,6 @@ var Histogram = function (_Rect) {
         if (!!Number(u3sigma)) {
           text = u3sigma.toFixed(precision);
         }
-        context.beginPath();
         context.font = '10px Verdana';
         context.fillText(text, xpos, ypos + textHeight);
       }
@@ -983,7 +961,7 @@ var Histogram = function (_Rect) {
         text = usl.toFixed(precision);
       }
 
-      context.font = '11px Verdana';
+      context.font = '10px Verdana';
       context.fillText(text, xpos, ypos + textHeight);
     }
   }, {
