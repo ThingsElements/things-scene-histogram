@@ -10,9 +10,6 @@ export default class Histogram extends Rect {
   constructor(model, context) {
     super(model, context)
 
-    this.usl = null  // Upper Specification Limit
-    this.target = null
-    this.lsl = null  // Lower Specification Limit
     this.min = null  // 데이터 배열 최소값
     this.max = null  // 데이터 배열 최대값
     this.mean = null   // 데이터 배열 평균
@@ -349,7 +346,7 @@ export default class Histogram extends Rect {
 
   // 차트 X축 그리기
   drawXAxis(context, r) {
-    var { autoScaleX, show3SigmaLine, showSpecLimit, precision, minX, maxX } = this.model
+    var { autoScaleX, show3SigmaLine, showSpecLimit, precision, minX, maxX, target, lsl, usl } = this.model
     var min, max, xpos, ypos;
     var textHeight = 15;
 
@@ -366,9 +363,9 @@ export default class Histogram extends Rect {
       }
 
       if (showSpecLimit) {
-        vs.push(this.target);
-        vs.push(this.lsl);
-        vs.push(this.usl);
+        vs.push(target);
+        vs.push(lsl);
+        vs.push(usl);
       }
 
       min = Math.min.apply(null, vs);
@@ -778,14 +775,14 @@ export default class Histogram extends Rect {
   // Target, Spec Line 그리기
   drawSpecLine(context, r) {
     /* Target Line 그리기 */
-    var { minX, maxX, precision } = this.model
+    var { minX, maxX, precision, target, lsl, usl } = this.model
     var origin = {
       x : r.x,
       y : r.y + r.h
     };
     var min = minX, max = maxX;
 
-    var xpos = origin.x + (((this.target - min) * r.w) / (max - min));
+    var xpos = origin.x + (((target - min) * r.w) / (max - min));
     var ypos = origin.y;
 
     //TODO 디자인: 문자(T)
@@ -811,8 +808,8 @@ export default class Histogram extends Rect {
     var textHeight = 25;
 
     var text = '';
-    if(!!Number(this.target)){
-      text = this.target.toFixed(precision);
+    if(!!Number(target)){
+      text = target.toFixed(precision);
     }
     context.fontSize = '10px'
     context.fillText(text, xpos, ypos + textHeight)
@@ -822,7 +819,7 @@ export default class Histogram extends Rect {
 
     /* Spec Line 그리기 */
 
-    xpos = origin.x + (((this.lsl - min) * r.w) / (max - min));
+    xpos = origin.x + (((lsl - min) * r.w) / (max - min));
 
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
 
@@ -834,14 +831,14 @@ export default class Histogram extends Rect {
       context.fillText('LSL', xpos, ypos - r.h - 5)
     }
     var text = '';
-    if(!!Number(this.lsl)){
-      text = this.lsl.toFixed(precision);
+    if(!!Number(lsl)){
+      text = lsl.toFixed(precision);
     }
 
     context.fontSize = '10px'
     context.fillText(text, xpos, ypos + textHeight)
 
-    xpos = origin.x + (((this.usl - min) * r.w) / (max - min));
+    xpos = origin.x + (((usl - min) * r.w) / (max - min));
 
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
 
@@ -852,8 +849,8 @@ export default class Histogram extends Rect {
       context.fontSize = '11px'
       context.fillText('USL', xpos, ypos - r.h - 5)
     }
-    if(!!Number(this.usl)){
-      text = this.usl.toFixed(precision);
+    if(!!Number(usl)){
+      text = usl.toFixed(precision);
     }
 
     context.fontSize = '11px'

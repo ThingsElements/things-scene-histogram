@@ -35,9 +35,6 @@ var Histogram = function (_Rect) {
 
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Histogram).call(this, model, context));
 
-    _this.usl = null; // Upper Specification Limit
-    _this.target = null;
-    _this.lsl = null; // Lower Specification Limit
     _this.min = null; // 데이터 배열 최소값
     _this.max = null; // 데이터 배열 최대값
     _this.mean = null; // 데이터 배열 평균
@@ -443,6 +440,9 @@ var Histogram = function (_Rect) {
       var precision = _model4.precision;
       var minX = _model4.minX;
       var maxX = _model4.maxX;
+      var target = _model4.target;
+      var lsl = _model4.lsl;
+      var usl = _model4.usl;
 
       var min, max, xpos, ypos;
       var textHeight = 15;
@@ -460,9 +460,9 @@ var Histogram = function (_Rect) {
         }
 
         if (showSpecLimit) {
-          vs.push(this.target);
-          vs.push(this.lsl);
-          vs.push(this.usl);
+          vs.push(target);
+          vs.push(lsl);
+          vs.push(usl);
         }
 
         min = Math.min.apply(null, vs);
@@ -910,6 +910,9 @@ var Histogram = function (_Rect) {
       var minX = _model9.minX;
       var maxX = _model9.maxX;
       var precision = _model9.precision;
+      var target = _model9.target;
+      var lsl = _model9.lsl;
+      var usl = _model9.usl;
 
       var origin = {
         x: r.x,
@@ -918,7 +921,7 @@ var Histogram = function (_Rect) {
       var min = minX,
           max = maxX;
 
-      var xpos = origin.x + (this.target - min) * r.w / (max - min);
+      var xpos = origin.x + (target - min) * r.w / (max - min);
       var ypos = origin.y;
 
       //TODO 디자인: 문자(T)
@@ -944,8 +947,8 @@ var Histogram = function (_Rect) {
       var textHeight = 25;
 
       var text = '';
-      if (!!Number(this.target)) {
-        text = this.target.toFixed(precision);
+      if (!!Number(target)) {
+        text = target.toFixed(precision);
       }
       context.fontSize = '10px';
       context.fillText(text, xpos, ypos + textHeight);
@@ -954,7 +957,7 @@ var Histogram = function (_Rect) {
 
       /* Spec Line 그리기 */
 
-      xpos = origin.x + (this.lsl - min) * r.w / (max - min);
+      xpos = origin.x + (lsl - min) * r.w / (max - min);
 
       if (xpos > r.x - 20 && xpos < r.x + r.w + 20) {
 
@@ -966,14 +969,14 @@ var Histogram = function (_Rect) {
         context.fillText('LSL', xpos, ypos - r.h - 5);
       }
       var text = '';
-      if (!!Number(this.lsl)) {
-        text = this.lsl.toFixed(precision);
+      if (!!Number(lsl)) {
+        text = lsl.toFixed(precision);
       }
 
       context.fontSize = '10px';
       context.fillText(text, xpos, ypos + textHeight);
 
-      xpos = origin.x + (this.usl - min) * r.w / (max - min);
+      xpos = origin.x + (usl - min) * r.w / (max - min);
 
       if (xpos > r.x - 20 && xpos < r.x + r.w + 20) {
 
@@ -984,8 +987,8 @@ var Histogram = function (_Rect) {
         context.fontSize = '11px';
         context.fillText('USL', xpos, ypos - r.h - 5);
       }
-      if (!!Number(this.usl)) {
-        text = this.usl.toFixed(precision);
+      if (!!Number(usl)) {
+        text = usl.toFixed(precision);
       }
 
       context.fontSize = '11px';

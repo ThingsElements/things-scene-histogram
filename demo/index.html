@@ -67,19 +67,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <input type="text" value="{{target.bottomTitle::change}}"/>
           <label>left title</label>
           <input type="text" value="{{target.leftTitle::change}}"/>
-          <label>show 3-sigma line</label>
+          <label>USL</label>
+          <input type="number" value-as-number="{{target.usl::change}}" min="0" max="1000" step="1"/>
+          <label>LSL</label>
+          <input type="number" value-as-number="{{target.lsl::change}}" min="0" max="1000" step="1"/>
+          <label>TARGET</label>
+          <input type="number" value-as-number="{{target.target::change}}" min="0" max="1000" step="1"/>
           <input type="checkbox" checked="{{target.show3SigmaLine::change}}" required>show 3-sigma line
-          <label>show normal line</label>
           <input type="checkbox" checked="{{target.showNormalLine::change}}" required>show normal line
-          <label>show spec line</label>
           <input type="checkbox" checked="{{target.showSpecLimit::change}}" required>show spec line
-          <label>show grid line</label>
           <input type="checkbox" checked="{{target.showGridLine::change}}" required>show grid line
-          <label>show bar label</label>
           <input type="checkbox" checked="{{target.showBarLabel::change}}" required>show bar label
-          <label>auto scale-x</label>
           <input type="checkbox" checked="{{target.autoScaleX::change}}" required>auto scale-x
-          <label>auto scale-y</label>
           <input type="checkbox" checked="{{target.autoScaleY::change}}" required>auto scale-y
           <label>precision</label>
           <input type="number" value-as-number="{{target.precision::change}}" min="0" max="10" step="1"/>
@@ -115,9 +114,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             topTitle: 'Top Title',
             bottomTitle: 'Bottom Title',
             leftTitle: 'Left Title',
+            target: 125,
+            usl: 145,
+            lsl: 105,
             show3SigmaLine: true,
             showNormalLine: true,
-            showSpecLimit: false,
+            showSpecLimit: true,
             showGridLine: true,
             showBarLabel: true,
             precision: 2,   // 차트 표시 소수점 자릿수
