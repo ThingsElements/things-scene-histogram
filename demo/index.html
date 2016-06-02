@@ -72,7 +72,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <label>show normal line</label>
           <input type="checkbox" checked="{{target.showNormalLine::change}}" required>show normal line
           <label>show spec line</label>
-          <input type="checkbox" checked="{{target.showSpecLine::change}}" required>show spec line
+          <input type="checkbox" checked="{{target.showSpecLimit::change}}" required>show spec line
           <label>show grid line</label>
           <input type="checkbox" checked="{{target.showGridLine::change}}" required>show grid line
           <label>show bar label</label>
@@ -117,10 +117,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             leftTitle: 'Left Title',
             show3SigmaLine: true,
             showNormalLine: true,
-            showSpecLimit: true,
+            showSpecLimit: false,
             showGridLine: true,
             showBarLabel: true,
-            precision: 4,   // 차트 표시 소수점 자릿수
+            precision: 2,   // 차트 표시 소수점 자릿수
             autoScaleX: true,   // X축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
             autoScaleY: true,   // Y축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
             minX: 100,  // 사용자 정의 X축 최소값

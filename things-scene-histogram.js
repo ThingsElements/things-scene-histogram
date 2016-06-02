@@ -49,6 +49,9 @@ var Histogram = function (_Rect) {
     _this.binwidth = null; // X축 간격(BAR 차트 넓이)
     _this.binsize = null; // BAR 차트 생성 갯수
     _this.calculated = false; //차트 기준값 계산 완료 상태(true : 완료, false: 미완료)
+
+    _this.initCalc();
+    _this.calculate();
     return _this;
   }
 
@@ -130,9 +133,6 @@ var Histogram = function (_Rect) {
 
         context.closePath();
 
-        // this.drawFill(context)
-        // this.drawStroke(context)
-
         context.translate(-left, -top);
       }
     }
@@ -143,6 +143,9 @@ var Histogram = function (_Rect) {
     // 차트 데이터 추가
     value: function addValue(v) {
       this.model.data.push(v);
+
+      this.initCalc();
+      this.calculate();
     }
 
     // 차트 데이터 배열 추가
@@ -151,6 +154,9 @@ var Histogram = function (_Rect) {
     key: 'setData',
     value: function setData(data) {
       this.model.data = data;
+
+      this.initCalc();
+      this.calculate();
     }
 
     // 차트 데이터 초기화
@@ -159,6 +165,9 @@ var Histogram = function (_Rect) {
     key: 'resetData',
     value: function resetData() {
       this.model.data = [];
+
+      this.initCalc();
+      this.calculate();
     }
 
     // 차트 데이터 갯수
@@ -300,6 +309,13 @@ var Histogram = function (_Rect) {
 
       this.calculated = true;
     }
+  }, {
+    key: 'onchange',
+    value: function onchange(after) {}
+    // TODO data등 계산로직과 관련된 부분의 변경이 있을 때 다시 계산하도록 한다.
+    // this.initCalc()
+    // this.calculate()
+
 
     // 차트 그리기(전체 화면 다시그림)
     // * 화면을 각각 개별로 다시 그리고 싶다면 그린 element를 변수로 저장하고 remove 함수로 삭제
@@ -316,9 +332,6 @@ var Histogram = function (_Rect) {
       // 데이타 배열 체크
 
       if (data.length < 2 || !Number(width) || !Number(height)) return false;
-
-      this.initCalc();
-      this.calculate();
 
       // 차트 초기화
       context.beginPath();
@@ -428,6 +441,8 @@ var Histogram = function (_Rect) {
       var show3SigmaLine = _model4.show3SigmaLine;
       var showSpecLimit = _model4.showSpecLimit;
       var precision = _model4.precision;
+      var minX = _model4.minX;
+      var maxX = _model4.maxX;
 
       var min, max, xpos, ypos;
       var textHeight = 15;
@@ -454,12 +469,9 @@ var Histogram = function (_Rect) {
         max = Math.max.apply(null, vs);
       } else {
         // 설정한 최소값, 최대값 설정
-        min = this.minX;
-        max = this.maxX;
+        min = minX;
+        max = maxX;
       }
-
-      this.minX = min;
-      this.maxX = max;
 
       var maxTextSize = 0; // X축 문자 최대 넓이
       var prevXPos = 0; // 전 X축 X좌표
@@ -544,11 +556,11 @@ var Histogram = function (_Rect) {
       context.lineTo(r.x + r.w + 20, ypos);
       context.stroke();
 
-      var szstep = (this.maxX - this.minX) / CHART_Y_SCALE_STEP;
+      var szstep = (max - min) / CHART_Y_SCALE_STEP;
 
       // rect 하단에 보조 X축 출력
       for (var i = 0; i <= CHART_Y_SCALE_STEP; i++) {
-        var v = this.minX + szstep * i;
+        var v = min + szstep * i;
         var xpos = r.x + (v - min) * r.w / (max - min);
 
         // TODO 디자인: 보조 X축 Line와 문자

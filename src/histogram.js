@@ -23,7 +23,10 @@ export default class Histogram extends Rect {
     this.binlast = null  // X축 마지막값
     this.binwidth = null   // X축 간격(BAR 차트 넓이)
     this.binsize = null  // BAR 차트 생성 갯수
-    this.calculated = false  //차트 기준값 계산 완료 상태(true : 완료, false: 미완료) 
+    this.calculated = false  //차트 기준값 계산 완료 상태(true : 완료, false: 미완료)
+
+    this.initCalc()
+    this.calculate()
   }
 
   _draw(context) {
@@ -40,16 +43,16 @@ export default class Histogram extends Rect {
       data = [],
 
     // 차트 제목 설정
-      topTitle = '',  
-      bottomTitle = '', 
-      leftTitle = '', 
+      topTitle = '',
+      bottomTitle = '',
+      leftTitle = '',
 
     // 차트 화면표시 설정
-      show3SigmaLine = true,  
-      showNormalLine = true,  
-      showSpecLimit = true, 
-      showGridLine = true,  
-      showBarLabel = true,  
+      show3SigmaLine = true,
+      showNormalLine = true,
+      showSpecLimit = true,
+      showGridLine = true,
+      showBarLabel = true,
 
       precision = 4,   // 차트 표시 소수점 자릿수
 
@@ -73,9 +76,6 @@ export default class Histogram extends Rect {
 
       context.closePath()
 
-      // this.drawFill(context)
-      // this.drawStroke(context)
-      
       context.translate(-left, -top)
     }
   }
@@ -85,16 +85,25 @@ export default class Histogram extends Rect {
   // 차트 데이터 추가
   addValue(v) {
     this.model.data.push(v);
+
+    this.initCalc()
+    this.calculate()
   }
 
   // 차트 데이터 배열 추가
   setData(data) {
     this.model.data = data;
+
+    this.initCalc()
+    this.calculate()
   }
 
   // 차트 데이터 초기화
   resetData() {
     this.model.data = [];
+
+    this.initCalc()
+    this.calculate()
   }
 
   // 차트 데이터 갯수
@@ -126,7 +135,7 @@ export default class Histogram extends Rect {
 
     if(!Number(data[0]))
       return false;
-    
+
     this.min = Stat.min(data);
     this.max = Stat.max(data);
 
@@ -228,6 +237,12 @@ export default class Histogram extends Rect {
     this.calculated = true;
   }
 
+  onchange(after) {
+    // TODO data등 계산로직과 관련된 부분의 변경이 있을 때 다시 계산하도록 한다.
+    // this.initCalc()
+    // this.calculate()
+  }
+
   // 차트 그리기(전체 화면 다시그림)
   // * 화면을 각각 개별로 다시 그리고 싶다면 그린 element를 변수로 저장하고 remove 함수로 삭제
   drawChart(context, width, height) {
@@ -243,10 +258,8 @@ export default class Histogram extends Rect {
     if (data.length < 2 || !Number(width) || !Number(height) )
       return false;
 
-    this.initCalc()
-    this.calculate()
 
-    // 차트 초기화 
+    // 차트 초기화
     context.beginPath()
     this.drawTitle(context, width, height);
 
@@ -274,7 +287,7 @@ export default class Histogram extends Rect {
       this.drawSpecLine(context, rect);
     }
   }
-  
+
   getRect(w, h){
     var CHART_LEFT_GAP_PIXELS = 60;
     var CHART_RIGHT_GAP_PIXELS = 30;
@@ -336,7 +349,7 @@ export default class Histogram extends Rect {
 
   // 차트 X축 그리기
   drawXAxis(context, r) {
-    var { autoScaleX, show3SigmaLine, showSpecLimit, precision } = this.model
+    var { autoScaleX, show3SigmaLine, showSpecLimit, precision, minX, maxX } = this.model
     var min, max, xpos, ypos;
     var textHeight = 15;
 
@@ -362,12 +375,9 @@ export default class Histogram extends Rect {
       max = Math.max.apply(null, vs);
     } else {
       // 설정한 최소값, 최대값 설정
-      min = this.minX;
-      max = this.maxX;
+      min = minX;
+      max = maxX;
     }
-
-    this.minX = min;
-    this.maxX = max;
 
     var maxTextSize = 0; // X축 문자 최대 넓이
     var prevXPos = 0; // 전 X축 X좌표
@@ -394,7 +404,7 @@ export default class Histogram extends Rect {
       }
 
       context.fillText(text, xpos, ypos + 10)
-      
+
       // var tBox = t.getBBox();
       // maxTextSize = Math.max(maxTextSize, tBox.width);
       // t.remove();
@@ -453,11 +463,11 @@ export default class Histogram extends Rect {
     context.stroke()
 
 
-    var szstep = (this.maxX - this.minX) / CHART_Y_SCALE_STEP;
+    var szstep = (max - min) / CHART_Y_SCALE_STEP;
 
     // rect 하단에 보조 X축 출력
     for ( var i = 0; i <= CHART_Y_SCALE_STEP; i++) {
-      var v = this.minX + szstep * i;
+      var v = min + szstep * i;
       var xpos = r.x + ((v - min) * r.w) / (max - min);
 
       // TODO 디자인: 보조 X축 Line와 문자
@@ -659,7 +669,7 @@ export default class Histogram extends Rect {
     context.lineWidth = 1
 
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
-      
+
       context.moveTo(xpos, ypos)
       context.lineTo(xpos, ypos - r.h - 10)
       context.stroke()
@@ -789,7 +799,7 @@ export default class Histogram extends Rect {
     context.lineWidth = 1
 
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
-      
+
       context.moveTo(xpos, ypos)
       context.lineTo(xpos, ypos - r.h)
       context.stroke()
@@ -799,7 +809,7 @@ export default class Histogram extends Rect {
     }
 
     var textHeight = 25;
-    
+
     var text = '';
     if(!!Number(this.target)){
       text = this.target.toFixed(precision);
@@ -830,7 +840,7 @@ export default class Histogram extends Rect {
 
     context.fontSize = '10px'
     context.fillText(text, xpos, ypos + textHeight)
-    
+
     xpos = origin.x + (((this.usl - min) * r.w) / (max - min));
 
     if (xpos > r.x - 20 && xpos < (r.x + r.w) + 20) {
