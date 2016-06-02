@@ -50,6 +50,7 @@ export default class Histogram extends Rect {
       showSpecLimit = true,
       showGridLine = true,
       showBarLabel = true,
+      showSubXAxis = true,
 
       precision = 4,   // 차트 표시 소수점 자릿수
 
@@ -151,12 +152,12 @@ export default class Histogram extends Rect {
     var o = Stat.minunit(range / this.binsize);
     this.binwidth = o.value;
     var minunit = o.minunit;
-
+    console.log(this.binwidth)
     // X축 처음값, 마지막값 설정
     if (range == 0) {
       this.binsize = 5;
-      this.binfirst = Math.floor(min) - 2;
-      this.binlast = Math.floor(min) + 3;
+      this.binfirst = Math.floor(this.min) - 2;
+      this.binlast = Math.floor(this.min) + 3;
     } else {
       var temp = this.min;
 
@@ -202,7 +203,7 @@ export default class Histogram extends Rect {
       if (dv === this.binfirst) {
         idx = 0;
       } else {
-        idx = Math.floor(Math.floor((dv - this.binfirst) / this.binwidth));
+        idx = Math.floor((dv - this.binfirst) / this.binwidth)
       }
 
       this.freqData[idx]++;
@@ -317,10 +318,9 @@ export default class Histogram extends Rect {
 
     // TODO 디자인: 차트에 top, left, bottom 문자
     context.fillStyle = '#315A9D'
-    context.fontSize = '13px'
-    context.fontFamily = 'Verdana'
-    context.fontWeight = 'bold'
-    context.textBaseline = 'middle'
+    context.textAlign = 'center'
+    context.font = 'bold 13px Verdana'
+    context.beginPath()
 
     if (topTitle){
       context.fillText(topTitle, rect.x + rect.w / 2, rect.y)
@@ -346,10 +346,10 @@ export default class Histogram extends Rect {
 
   // 차트 X축 그리기
   drawXAxis(context, r) {
-    var { autoScaleX, show3SigmaLine, showSpecLimit, precision, minX, maxX, target, lsl, usl } = this.model
+    var { autoScaleX, show3SigmaLine, showSpecLimit, showSubXAxis, precision, minX, maxX, target, lsl, usl } = this.model
     var min, max, xpos, ypos;
     var textHeight = 15;
-
+    console.log('binMesh : ', this.binMesh)
     if (autoScaleX) {
       // this.binMesh, mean, target, usl, lsl 데이터로 최소값, 최대값 생성하여 설정
       min = this.binMesh[0];
@@ -386,25 +386,20 @@ export default class Histogram extends Rect {
     // 글자 스타일 지정
     context.beginPath()
 
-    context.fontSize = '10px'
-    context.fontFamily = 'Verdana'
+    context.font = '10px Verdana'
     context.textAlign = 'center'
     context.strokeStyle = '#666'
     context.lineWidth = 1
 
     // X축 문자 최대 가로 넓이 계산
     for ( var i = 0; i < this.binMesh.length; i++) {
-      xpos = r.x + ((this.binMesh[i] - min) * r.w) / (max - min);
+      xpos = r.x + ((this.binMesh[i] - this._minX) * r.w) / (max - min);
       var text = '';
       if(!!Number(this.binMesh[i])){
         text = this.binMesh[i].toFixed(precision);
       }
 
       context.fillText(text, xpos, ypos + 10)
-
-      // var tBox = t.getBBox();
-      // maxTextSize = Math.max(maxTextSize, tBox.width);
-      // t.remove();
     }
 
     // X축 passCount 계산
@@ -438,7 +433,7 @@ export default class Histogram extends Rect {
           text = this.binMesh[i].toFixed(precision);
         }
         context.fillStyle = '#666'
-        context.fillText(text, xpos, ypos + 10)
+        context.fillText(text, xpos, ypos + 14)
       }
       iCount++;
     }
@@ -454,32 +449,34 @@ export default class Histogram extends Rect {
       ypos = r.y + r.h + 8 + textHeight * 1;
     }
 
-    // rect 하단에 보조 X축 라인출력
-    context.moveTo(r.x - 20, ypos)
-    context.lineTo(r.x + r.w + 20, ypos)
-    context.stroke()
-
-
-    var szstep = (max - min) / CHART_Y_SCALE_STEP;
-
-    // rect 하단에 보조 X축 출력
-    for ( var i = 0; i <= CHART_Y_SCALE_STEP; i++) {
-      var v = min + szstep * i;
-      var xpos = r.x + ((v - min) * r.w) / (max - min);
-
-      // TODO 디자인: 보조 X축 Line와 문자
-      context.moveTo(xpos, ypos + 5)
-      context.lineTo(xpos, ypos)
+    if(showSubXAxis){
+      // rect 하단에 보조 X축 라인출력
+      context.moveTo(r.x - 20, ypos)
+      context.lineTo(r.x + r.w + 20, ypos)
       context.stroke()
 
 
-      var text = '';
-      if(!!Number(this.v)){
-        text = this.v.toFixed(precision);
+      var szstep = (max - min) / CHART_Y_SCALE_STEP;
+
+      // rect 하단에 보조 X축 출력
+      for ( var i = 0; i <= CHART_Y_SCALE_STEP; i++) {
+        var v = min + szstep * i;
+        var xpos = r.x + ((v - min) * r.w) / (max - min);
+
+        // TODO 디자인: 보조 X축 Line와 문자
+        context.moveTo(xpos, ypos + 5)
+        context.lineTo(xpos, ypos)
+        context.stroke()
+
+        var text = '';
+        if(!!Number(v)){
+          text = v.toFixed(precision);
+        }
+
+        context.beginPath()
+        context.fillStyle = '#666'
+        context.fillText(text, xpos, ypos + 14)
       }
-      context.beginPath()
-      context.fillStyle = '#666'
-      context.fillText(text, xpos, ypos + 10)
     }
   }
 
@@ -522,8 +519,7 @@ export default class Histogram extends Rect {
     }
 
     context.beginPath()
-    context.fontSize = '10px'
-    context.fontFamily = 'Verdana'
+    context.font = '10px Verdana'
     context.textBaseline = 'end'
     context.fillStyle = '#666'
     context.strokeStyle = '#666'
@@ -560,10 +556,9 @@ export default class Histogram extends Rect {
   drawBar(context, r) {
     var yl, xp1, xp2, hp, yp;
     var { minX, maxX, minY, maxY, showBarLabel } = this.model
-
+    console.log('freqData : ', this.freqData)
     for ( var i = 0; i < this.binMesh.length - 1; i++) {
       yl = this.freqData[i];
-
       xp1 = r.x + ((this.binMesh[i] - minX) * r.w) / (maxX - minX); // x
       // pixels
       xp2 = r.x + ((this.binMesh[i + 1] - minX) * r.w) / (maxX - minX);
@@ -577,10 +572,7 @@ export default class Histogram extends Rect {
         context.beginPath()
 
         context.fillStyle = '#86c838'
-        context.strokeStyle = '#fff'
-        context.lineWidth = 2
-        context.rect(xp1, yp, xp2 - xp1, hp)
-        context.stroke()
+        context.rect(xp1 + 2, yp, xp2 - xp1 - 4, hp)
         context.fill()
       }
 
@@ -590,9 +582,8 @@ export default class Histogram extends Rect {
 
         yp = Math.min(yp + hp / 2, r.y + r.h - 20);
 
-        context.fontSize = '10px'
-        context.fontFamily = 'Verdana'
-        context.textBaseline = 'middle'
+        context.font = '10px Verdana'
+        context.textAlign = 'center'
         context.fillStyle = '#ff0000'
 
         context.fillText(this.freqData[i], (xp1 + xp2) / 2, yp)
@@ -654,13 +645,12 @@ export default class Histogram extends Rect {
 
     var xpos = origin.x + (((this.mean - min) * r.w) / (max - min));
     var ypos = origin.y;
-
+    console.log(this.mean)
     //TODO 디자인: 문자(M)
     context.beginPath()
 
-    context.fontSize = '12px'
-    context.fontFamily = 'Verdana'
-    context.textBaseline = 'middle'
+    context.font = '12px Verdana'
+    context.textAlign = 'center'
     context.fillStyle = '#da5165'
     context.strokeStyle = '#da5165'
     context.lineWidth = 1
@@ -682,7 +672,7 @@ export default class Histogram extends Rect {
         text = this.mean.toFixed(precision);
       }
       context.beginPath()
-      context.fontSize = '10px'
+      context.font = '10px Verdana'
       context.fillText(text, xpos, ypos + textHeight * 2)
     } else {
       var text = '';
@@ -690,7 +680,7 @@ export default class Histogram extends Rect {
         text = this.mean.toFixed(precision);
       }
       context.beginPath()
-      context.fontSize = '10px'
+      context.font = '10px Verdana'
       context.fillText(text, xpos, ypos + textHeight)
     }
 
@@ -715,7 +705,7 @@ export default class Histogram extends Rect {
       context.lineTo(xpos, ypos - r.h - 10)
       context.stroke()
 
-      context.fontSize = '12px'
+      context.font = '12px Verdana'
       context.fillText('-3s', xpos, ypos - r.h - 15)
     }
 
@@ -725,7 +715,7 @@ export default class Histogram extends Rect {
         text = l3sigma.toFixed(precision);
       }
       context.beginPath()
-      context.fontSize = '10px'
+      context.font = '10px Verdana'
       context.fillText(text, xpos, ypos + textHeight * 2)
     } else {
       var text = '';
@@ -733,7 +723,7 @@ export default class Histogram extends Rect {
         text = l3sigma.toFixed(precision);
       }
       context.beginPath()
-      context.fontSize = '10px'
+      context.font = '10px Verdana'
       context.fillText(text, xpos, ypos + textHeight)
     }
 
@@ -749,7 +739,7 @@ export default class Histogram extends Rect {
       context.lineTo(xpos, ypos - r.h - 10)
       context.stroke()
 
-      context.fontSize = '12px'
+      context.font = '12px Verdana'
       context.fillText('3s', xpos, ypos - r.h - 15)
     }
 
@@ -759,7 +749,7 @@ export default class Histogram extends Rect {
         text = u3sigma.toFixed(precision);
       }
       context.beginPath()
-      context.fontSize = '10px'
+      context.font = '10px Verdana'
       context.fillText(text, xpos, ypos + textHeight * 2)
     } else {
       var text = '';
@@ -767,7 +757,7 @@ export default class Histogram extends Rect {
         text = u3sigma.toFixed(precision);
       }
       context.beginPath()
-      context.fontSize = '10px'
+      context.font = '10px Verdana'
       context.fillText(text, xpos, ypos + textHeight)
     }
   }
@@ -788,9 +778,8 @@ export default class Histogram extends Rect {
     //TODO 디자인: 문자(T)
     context.beginPath()
 
-    context.fontSize = '10px'
-    context.fontFamily = 'Verdana'
-    context.textBaseline = 'middle'
+    context.font = '10px Verdana'
+    context.textAlign = 'center'
     context.fillStyle = '#ffa500'
     context.strokeStyle = '#ffa500'
     context.lineWidth = 1
@@ -801,7 +790,7 @@ export default class Histogram extends Rect {
       context.lineTo(xpos, ypos - r.h)
       context.stroke()
 
-      context.fontSize = '11px'
+      context.font = '11px Verdana'
       context.fillText('T', xpos, ypos - r.h - 5)
     }
 
@@ -811,7 +800,7 @@ export default class Histogram extends Rect {
     if(!!Number(target)){
       text = target.toFixed(precision);
     }
-    context.fontSize = '10px'
+    context.font = '10px Verdana'
     context.fillText(text, xpos, ypos + textHeight)
 
     if (this.stddev == 0)
@@ -827,7 +816,7 @@ export default class Histogram extends Rect {
       context.lineTo(xpos, ypos - r.h)
       context.stroke()
 
-      context.fontSize = '11px'
+      context.font = '11px Verdana'
       context.fillText('LSL', xpos, ypos - r.h - 5)
     }
     var text = '';
@@ -835,7 +824,7 @@ export default class Histogram extends Rect {
       text = lsl.toFixed(precision);
     }
 
-    context.fontSize = '10px'
+    context.font = '10px Verdana'
     context.fillText(text, xpos, ypos + textHeight)
 
     xpos = origin.x + (((usl - min) * r.w) / (max - min));
@@ -846,14 +835,14 @@ export default class Histogram extends Rect {
       context.lineTo(xpos, ypos - r.h)
       context.stroke()
 
-      context.fontSize = '11px'
+      context.font = '11px Verdana'
       context.fillText('USL', xpos, ypos - r.h - 5)
     }
     if(!!Number(usl)){
       text = usl.toFixed(precision);
     }
 
-    context.fontSize = '11px'
+    context.font = '11px Verdana'
     context.fillText(text, xpos, ypos + textHeight)
   }
 }

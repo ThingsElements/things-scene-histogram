@@ -78,6 +78,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <input type="checkbox" checked="{{target.showSpecLimit::change}}" required>show spec line
           <input type="checkbox" checked="{{target.showGridLine::change}}" required>show grid line
           <input type="checkbox" checked="{{target.showBarLabel::change}}" required>show bar label
+          <input type="checkbox" checked="{{target.showSubXAxis::change}}" required>show sub Xaxis
           <input type="checkbox" checked="{{target.autoScaleX::change}}" required>auto scale-x
           <input type="checkbox" checked="{{target.autoScaleY::change}}" required>auto scale-y
           <label>precision</label>
@@ -103,7 +104,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         app.model = {
           // fillStyle: '#0EB22A',
-          width: 800,
+          width: 1200,
           height: 600,
           components: [{
             type: 'histogram',
@@ -122,7 +123,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             showSpecLimit: true,
             showGridLine: true,
             showBarLabel: true,
-            precision: 2,   // 차트 표시 소수점 자릿수
+            showSubXAxis: true,
+            precision: 0,   // 차트 표시 소수점 자릿수
             autoScaleX: true,   // X축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
             autoScaleY: true,   // Y축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
             minX: 100,  // 사용자 정의 X축 최소값
