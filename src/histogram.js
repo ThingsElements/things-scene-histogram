@@ -331,9 +331,9 @@ export default class Histogram extends Rect {
     if (leftTitle){
       context.translate(rect.x + 5, rect.y + rect.h / 2)
       context.rotate(-Math.PI / 2)
-      context.fillText(leftTitle, rect.x + 5, rect.y + rect.h / 2)
+      context.fillText(leftTitle, 0, 0)
       context.rotate(Math.PI / 2)
-      context.translate(-rect.x + 5, -(rect.y + rect.h / 2))
+      context.translate(-(rect.x + 5), -(rect.y + rect.h / 2))
     }
   }
   // 차트 사각형 영역 그리기
