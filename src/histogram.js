@@ -29,7 +29,6 @@ export default class Histogram extends Rect {
   _draw(context) {
     var {
       value = 0,
-      hidden = false,
       fillStyle,
       blankStrokeStyle,
       top,
@@ -64,18 +63,15 @@ export default class Histogram extends Rect {
       stepY = 0,   //Y축 max 최소값
     } = this.model;
 
-    if(!hidden){
+    context.translate(left, top)
 
-      context.translate(left, top)
+    context.beginPath()
 
-      context.beginPath()
+    this.drawChart(context, width, height)
 
-      this.drawChart(context, width, height)
+    context.closePath()
 
-      context.closePath()
-
-      context.translate(-left, -top)
-    }
+    context.translate(-left, -top)
   }
 
   get controls() {}

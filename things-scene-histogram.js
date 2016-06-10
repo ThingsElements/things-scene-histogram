@@ -59,8 +59,6 @@ var Histogram = function (_Rect) {
       this.model;
       var _model$value = _model.value;
       var value = _model$value === undefined ? 0 : _model$value;
-      var _model$hidden = _model.hidden;
-      var hidden = _model$hidden === undefined ? false : _model$hidden;
       var fillStyle = _model.fillStyle;
       var blankStrokeStyle = _model.blankStrokeStyle;
       var top = _model.top;
@@ -122,18 +120,15 @@ var Histogram = function (_Rect) {
       stepY = _model$stepY === undefined ? 0 : _model$stepY;
 
 
-      if (!hidden) {
+      context.translate(left, top);
 
-        context.translate(left, top);
+      context.beginPath();
 
-        context.beginPath();
+      this.drawChart(context, width, height);
 
-        this.drawChart(context, width, height);
+      context.closePath();
 
-        context.closePath();
-
-        context.translate(-left, -top);
-      }
+      context.translate(-left, -top);
     }
   }, {
     key: 'addValue',
