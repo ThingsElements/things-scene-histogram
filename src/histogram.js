@@ -26,6 +26,10 @@ export default class Histogram extends Rect {
     this.calculate()
   }
 
+  get volatile() {
+    return []
+  }
+
   _draw(context) {
     var {
       value = 0,
