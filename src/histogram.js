@@ -26,10 +26,6 @@ export default class Histogram extends Rect {
     this.calculate()
   }
 
-  get volatile() {
-    return []
-  }
-
   _draw(context) {
     var {
       value = 0,
@@ -126,7 +122,7 @@ export default class Histogram extends Rect {
 
   // 차트 데이터 계산
   calculate() {
-    var { data } = this.model
+    var { data = [] } = this.model
 
     if (data.length < 2)
       return false;
@@ -245,7 +241,7 @@ export default class Histogram extends Rect {
   drawChart(context, width, height) {
 
     var {
-      data,
+      data = [],
       showNormalLine,
       showSpecLimit,
       show3SigmaLine
