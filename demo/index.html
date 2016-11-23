@@ -99,40 +99,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
 
     <script>
-      window.addEventListener('WebComponentsReady', function(e) {
-        var app = document.querySelector('#app')
-
-        app.model = {
-          // fillStyle: '#0EB22A',
-          width: 1200,
-          height: 600,
-          components: [{
-            type: 'histogram',
-            top: 10,
-            left: 10,
-            width: 600,
-            height: 400,
-            topTitle: 'Top Title',
-            bottomTitle: 'Bottom Title',
-            leftTitle: 'Left Title',
-            target: 125,
-            usl: 145,
-            lsl: 105,
-            show3SigmaLine: true,
-            showNormalLine: true,
-            showSpecLimit: true,
-            showGridLine: true,
-            showBarLabel: true,
-            showSubXAxis: false,
-            precision: 0,   // 차트 표시 소수점 자릿수
-            autoScaleX: true,   // X축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
-            autoScaleY: true,   // Y축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
-            minX: 100,  // 사용자 정의 X축 최소값
-            maxX: 150,   // 사용자 정의 X축 최대값
-            minY: 0,  // 사용자 정의 Y축 최소값
-            maxY: 25, // 사용자 정의 Y축 최대값
-            stepY: 5,   //Y축 max 최소값
-            data: [
+      var data = {
+        seriesData: [
               125.36,
               126.66,
               130.28,
@@ -233,9 +201,57 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               122.87,
               126.61,
               117.96
-            ]
+            ],
+            usl : 145,
+            target: 125,
+            lsl: 105
+      }
+      window.addEventListener('WebComponentsReady', function(e) {
+        var app = document.querySelector('#app')
+
+        setInterval(function() {
+          var newData = JSON.parse(JSON.stringify(data))
+          for(var i = 0; i < data.seriesData.length; i++ ) {
+            newData.seriesData[i] = data.seriesData[i] + ((Math.random() * 1000) / 100)
+          }
+
+          app.scene.findAll('histogram')[0].set('data', newData)
+        }, 3000)
+
+        app.model = {
+          // fillStyle: '#0EB22A',
+          width: 1200,
+          height: 600,
+          components: [{
+            type: 'histogram',
+            top: 10,
+            left: 10,
+            width: 600,
+            height: 400,
+            topTitle: 'Top Title',
+            bottomTitle: 'Bottom Title',
+            leftTitle: 'Left Title',
+            show3SigmaLine: true,
+            showNormalLine: true,
+            showSpecLimit: true,
+            showGridLine: true,
+            showBarLabel: true,
+            showSubXAxis: false,
+            precision: 0,   // 차트 표시 소수점 자릿수
+            autoScaleX: true,   // X축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
+            autoScaleY: true,   // Y축 최소값, 최대값 자동계산 여부(true : 자동, false : 설정)
+            minX: 100,  // 사용자 정의 X축 최소값
+            maxX: 150,   // 사용자 정의 X축 최대값
+            minY: 0,  // 사용자 정의 Y축 최소값
+            maxY: 25, // 사용자 정의 Y축 최대값
+            stepY: 5,   //Y축 max 최소값
+            data: {
+              data: []
+            }
           }]
         }
+
+        app.scene.findAll('histogram')[0].set('data', data)
       });
     </script>
   </body>

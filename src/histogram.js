@@ -1,11 +1,107 @@
 import * as Stat from './stat'
 
-var { Component, Rect } = scene
+var { Component, RectPath, Shape } = scene
 
 const CHART_BORDER_PIXELS = 10
 const CHART_Y_SCALE_STEP = 5
 
-export default class Histogram extends Rect {
+const NATURE = {
+  mutable: false,
+  resizable: true,
+  rotatable: true,
+  properties : [{
+    type: 'string',
+    label: 'topTitle',
+    name: 'topTitle',
+    property: 'topTitle'
+  }, {
+    type: 'string',
+    label: 'lefTitle',
+    name: 'leftTitle',
+    property: 'leftTitle'
+  }, {
+    type: 'string',
+    label: 'bottomTitle',
+    name: 'bottomTitle',
+    property: 'bottomTitle'
+  }, {
+    type: 'number',
+    label: 'precision',
+    name: 'precision',
+    property: 'precision'
+  }, {
+    type: 'number',
+    label: 'minX',
+    name: 'minX',
+    property: 'minX'
+  }, {
+    type: 'number',
+    label: 'maxX',
+    name: 'maxX',
+    property: 'maxX'
+  }, {
+    type: 'number',
+    label: 'minY',
+    name: 'minY',
+    property: 'minY'
+  }, {
+    type: 'number',
+    label: 'maxY',
+    name: 'maxY',
+    property: 'maxY'
+  }, {
+    type: 'number',
+    label: 'stepY',
+    name: 'stepY',
+    property: 'stepY'
+  }, {
+    type: 'legend',
+    label: 'Toogle Options',
+    name: ''
+  }, {
+    type: 'checkbox',
+    label: 'show3SigmaLine',
+    name: 'show3SigmaLine',
+    property: 'show3SigmaLine'
+  }, {
+    type: 'checkbox',
+    label: 'showNormalLine',
+    name: 'showNormalLine',
+    property: 'showNormalLine'
+  }, {
+    type: 'checkbox',
+    label: 'showSpecLimit',
+    name: 'showSpecLimit',
+    property: 'showSpecLimit'
+  }, {
+    type: 'checkbox',
+    label: 'showGridLine',
+    name: 'showGridLine',
+    property: 'showGridLine'
+  }, {
+    type: 'checkbox',
+    label: 'showBarLabel',
+    name: 'showBarLabel',
+    property: 'showBarLabel'
+  }, {
+    type: 'checkbox',
+    label: 'showSubXAxis',
+    name: 'showSubXAxis',
+    property: 'showSubXAxis'
+  }, {
+    type: 'checkbox',
+    label: 'autoScaleX',
+    name: 'autoScaleX',
+    property: 'autoScaleX'
+  }, {
+    type: 'checkbox',
+    label: 'autoScaleY',
+    name: 'autoScaleY',
+    property: 'autoScaleY'
+  }]
+}
+
+export default class Histogram extends RectPath(Shape) {
 
   constructor(model, context) {
     super(model, context)
@@ -26,8 +122,8 @@ export default class Histogram extends Rect {
     this.calculate()
   }
 
-  get volatile() {
-    return []
+  get nature() {
+    return NATURE
   }
 
   _draw(context) {
@@ -78,8 +174,6 @@ export default class Histogram extends Rect {
     context.translate(-left, -top)
   }
 
-  get controls() {}
-
   // 차트 데이터 추가
   addValue(v) {
     this.model.data.push(v);
@@ -126,23 +220,26 @@ export default class Histogram extends Rect {
 
   // 차트 데이터 계산
   calculate() {
-    var { data = [] } = this.model
+    var { data } = this.model
+    data = this.convertObject(data) || {}
 
-    if (data.length < 2)
+    var seriesData = data.seriesData || []
+
+    if (seriesData.length < 2)
       return false;
 
-    if(!Number(data[0]))
+    if(!Number(seriesData[0]))
       return false;
 
-    this.min = Stat.min(data);
-    this.max = Stat.max(data);
+    this.min = Stat.min(seriesData);
+    this.max = Stat.max(seriesData);
 
     var range = this.max - this.min;
 
     // BAR 차트 갯수 설정(초기 설정값이 있으면 계산X)
     if (this.binsize === null) {
       // Math.sqrt(루트 근사값), Math.floor(소수점 올림)
-      var bin = Math.floor(Math.sqrt(data.length));
+      var bin = Math.floor(Math.sqrt(seriesData.length));
       bin = Math.max(5, bin);
       bin = Math.min(20, bin);
       this.binsize = bin;
@@ -195,8 +292,8 @@ export default class Histogram extends Rect {
 
     // BAR 차트 데이터 배열 값 설정
     var sum = 0, idx, dv;
-    for ( var i = 0; i < data.length; i++) {
-      dv = data[i];
+    for ( var i = 0; i < seriesData.length; i++) {
+      dv = seriesData[i];
       sum += dv;
 
       if (dv === this.binfirst) {
@@ -223,21 +320,24 @@ export default class Histogram extends Rect {
 
     // 데이터 배열 평균 계산 및 설정(초기 설정값이 있으면 계산X)
     if (this.mean === null) {
-      this.mean = sum / data.length;
+      this.mean = sum / seriesData.length;
     }
 
     // 데이터 배열 표준 편차 계산
     if (this.stddev === null) {
-      this.stddev = Stat.stddev(data, this.mean);
+      this.stddev = Stat.stddev(seriesData, this.mean);
     }
 
     this.calculated = true;
   }
 
   onchange(after) {
+    if(after.hasOwnProperty('data')) {
+      this.initCalc()
+      this.calculate()
+    }
+
     // TODO data등 계산로직과 관련된 부분의 변경이 있을 때 다시 계산하도록 한다.
-    // this.initCalc()
-    // this.calculate()
   }
 
   // 차트 그리기(전체 화면 다시그림)
@@ -245,14 +345,17 @@ export default class Histogram extends Rect {
   drawChart(context, width, height) {
 
     var {
-      data = [],
+      data,
       showNormalLine,
       showSpecLimit,
       show3SigmaLine
     } = this.model
 
+    data = this.convertObject(data) || {}
+    var seriesData = data.seriesData || []
+
     // 데이타 배열 체크
-    if (data.length < 2 || !Number(width) || !Number(height) )
+    if (seriesData.length < 2 || !Number(width) || !Number(height) )
       return false;
 
 
@@ -337,7 +440,11 @@ export default class Histogram extends Rect {
 
   // 차트 X축 그리기
   drawXAxis(context, r) {
-    var { autoScaleX, show3SigmaLine, showSpecLimit, showSubXAxis, precision, minX, maxX, target, lsl, usl } = this.model
+    var { autoScaleX, show3SigmaLine, showSpecLimit, showSubXAxis, precision, minX, maxX, data } = this.model
+    data = this.convertObject(data) || {}
+    var spcData = data.spcData
+    var {target = 0, lsl = 0, usl = 0} = spcData
+
     var min, max, xpos, ypos;
     var textHeight = 15;
 
@@ -743,7 +850,11 @@ export default class Histogram extends Rect {
   // Target, Spec Line 그리기
   drawSpecLine(context, r) {
     /* Target Line 그리기 */
-    var { minX, maxX, precision, target, lsl, usl } = this.model
+    var { minX, maxX, precision, data } = this.model
+    data = this.convertObject(data) || {}
+    var spcData = data.spcData
+    var {target = 0, lsl = 0, usl = 0} = spcData
+
     var origin = {
       x : r.x,
       y : r.y + r.h
@@ -822,6 +933,79 @@ export default class Histogram extends Rect {
 
     context.font = '10px Verdana'
     context.fillText(text, xpos, ypos + textHeight)
+  }
+
+  toObjectArrayValue(array) {
+    if(!array || array.length === 0)
+      return null
+
+    if(!array[0].hasOwnProperty('__field1')) {
+      return array
+    }
+
+    let indexKeyMap = {}
+    let value = []
+
+    for(let key in array[0]) {
+      indexKeyMap[key] = array[0][key]
+    }
+
+    for(var i = 1; i < array.length; i++) {
+      let object = {}
+      let thisObject = array[i]
+      for(let key in indexKeyMap) {
+        let k = indexKeyMap[key];
+        let v = thisObject[key];
+        object[k] = v
+      }
+
+      value.push(object)
+    }
+
+    return value
+  }
+
+  convertObject(dataArray) {
+    if(!dataArray)
+      return null
+
+    if(!(dataArray instanceof Array)) {
+      if(dataArray instanceof Object) {
+        return dataArray
+      }
+      return null
+    }
+
+    // modeling중 변수 기본값에 대한 처리
+    if(dataArray[0].hasOwnProperty('__field1')) {
+      dataArray = this.toObjectArrayValue(dataArray)
+    }
+
+    let uslDataKey = this.model.uslDataKey || 'usl'
+    let lslDataKey = this.model.lslDataKey || 'lsl'
+    let targetDataKey = this.model.targetDataKey || 'target'
+    let seriesDataKey = this.model.seriesDataKey || 'seriesData'
+
+    let seriesData = []
+    let spcData = {}
+
+    let convertedObject = {
+      seriesData: seriesData,
+      spcData: spcData
+    }
+
+    for(let i in dataArray) {
+      let currData = dataArray[i]
+      if(i == 0) {
+        spcData.usl = Number(currData[uslDataKey])
+        spcData.lsl = Number(currData[lslDataKey])
+        spcData.target = Number(currData[targetDataKey])
+      }
+
+      seriesData.push(Number(currData[seriesDataKey]))
+    }
+
+    return convertedObject
   }
 }
 
