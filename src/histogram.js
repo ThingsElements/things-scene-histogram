@@ -442,7 +442,7 @@ export default class Histogram extends RectPath(Shape) {
   drawXAxis(context, r) {
     var { autoScaleX, show3SigmaLine, showSpecLimit, showSubXAxis, precision, minX, maxX, data } = this.model
     data = this.convertObject(data) || {}
-    var spcData = data.spcData
+    var spcData = data.spcData || {}
     var {target = 0, lsl = 0, usl = 0} = spcData
 
     var min, max, xpos, ypos;
@@ -852,7 +852,7 @@ export default class Histogram extends RectPath(Shape) {
     /* Target Line 그리기 */
     var { minX, maxX, precision, data } = this.model
     data = this.convertObject(data) || {}
-    var spcData = data.spcData
+    var spcData = data.spcData || {}
     var {target = 0, lsl = 0, usl = 0} = spcData
 
     var origin = {
