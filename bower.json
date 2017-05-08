@@ -1,6 +1,6 @@
 {
   "name": "things-scene-histogram",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "authors": [
     "Hatio Lab. <heartyoh@hatiolab.com>"
   ],
@@ -18,7 +18,7 @@
     "/test/"
   ],
   "dependencies": {
-    "things-scene": "^2.0.0"
+    "things-scene-core": "ThingsElements/things-scene-core#^2.0.0"
   },
   "devDependencies": {
     "polymer": "Polymer/polymer#^1.2.0",
