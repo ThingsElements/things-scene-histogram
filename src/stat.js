@@ -1,3 +1,6 @@
+/*
+ * Copyright © HatioLab Inc. All rights reserved.
+ */
 const ONEBYS2PI = 0.3989422804014327;
 
 // 배열 최소 값

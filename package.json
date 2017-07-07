@@ -15,7 +15,7 @@
     "url": "git+https://github.com/ThingsElements/things-scene-histogram.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "http://things-scene.hatiolab.com/EULA/",
   "bugs": {
     "url": "https://github.com/ThingsElements/things-scene-histogram/issues"
   },
@@ -37,6 +37,5 @@
     "uglifyjs": "^2.4.10",
     "watchify": "^3.3.1"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }

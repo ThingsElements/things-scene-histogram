@@ -1,3 +1,6 @@
+/*
+ * Copyright © HatioLab Inc. All rights reserved.
+ */
 import * as Stat from './stat'
 
 var { Component, RectPath, Shape } = scene

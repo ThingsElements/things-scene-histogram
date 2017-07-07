@@ -1,6 +1,6 @@
 {
   "name": "things-scene-histogram",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "authors": [
     "Hatio Lab. <heartyoh@hatiolab.com>"
   ],
@@ -11,7 +11,7 @@
     "seed"
   ],
   "main": "things-scene-histogram.html",
-  "license": "http://polymer.github.io/LICENSE.txt",
+  "license": "http://things-scene.hatiolab.com/EULA/",
   "homepage": "https://github.com/ThingsElements/things-scene-histogram/",
   "ignore": [
     "/.*",
